@@ -27,6 +27,12 @@ class HomeScreen extends StatelessWidget {
             onPressed: () {},
             padding: const EdgeInsets.symmetric(horizontal: 12), // Smaller padding
           ),
+          // Adicionado botão de configurações
+          IconButton(
+            icon: const Icon(Icons.settings, color: Colors.white, size: 20), // Smaller icon
+            onPressed: () {},
+            padding: const EdgeInsets.symmetric(horizontal: 12), // Smaller padding
+          ),
         ],
       ),
       body: SingleChildScrollView(
@@ -86,9 +92,10 @@ class HomeScreen extends StatelessWidget {
             icon: Icon(Icons.receipt_long),
             label: 'Despesas Base',
           ),
+          // Configurações substituído por Despesas no Brasil
           BottomNavigationBarItem(
-            icon: Icon(Icons.settings),
-            label: 'Configurações',
+            icon: Icon(Icons.public),
+            label: 'Despesas no Brasil',
           ),
         ],
       ),
