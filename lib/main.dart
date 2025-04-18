@@ -1,5 +1,5 @@
+// lib/main.dart
 import 'package:flutter/material.dart';
-//import 'models/console.dart';
 import 'screens/home_screen.dart';
 
 void main() {
@@ -12,19 +12,29 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Minha Estante',
+      title: 'Minhas Finanças',
       debugShowCheckedModeBanner: false,
       theme: ThemeData.dark().copyWith(
-        primaryColor: Colors.deepPurple,
-        scaffoldBackgroundColor: Colors.black,
+        scaffoldBackgroundColor: const Color(0xFF0A0E1A),
         appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.black,
+          backgroundColor: Color(0xFF0A0E1A),
           elevation: 0,
         ),
+        cardTheme: CardTheme(
+          color: const Color(0xFF1A1F2E),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+        bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+          backgroundColor: Color(0xFF0A0E1A),
+          selectedItemColor: Colors.blue,
+          unselectedItemColor: Colors.grey,
+        ),
         colorScheme: ColorScheme.fromSwatch().copyWith(
-          primary: Colors.deepPurple,
-          secondary: Colors.deepPurple[300],
-          background: Colors.black,
+          primary: Colors.blue,
+          secondary: Colors.blueAccent,
+          background: const Color(0xFF0A0E1A),
         ),
       ),
       home: const HomeScreen(),

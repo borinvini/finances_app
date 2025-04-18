@@ -1,6 +1,9 @@
+// lib/screens/home_screen.dart
 import 'package:flutter/material.dart';
-import '../models/console.dart';
-import '../widgets/console_list_item.dart';
+import '../models/expense.dart';
+import '../models/finance_data.dart';
+import '../widgets/summary_card.dart';
+import '../widgets/expense_section.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -9,138 +12,76 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.menu),
-          onPressed: () {},
-        ),
         title: const Text(
-          'Minha Estante',
+          'Minhas Finanças',
           style: TextStyle(
-            color: Colors.deepPurple,
+            color: Colors.white,
             fontWeight: FontWeight.bold,
           ),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.search),
+            icon: const Icon(Icons.calendar_today, color: Colors.white),
             onPressed: () {},
           ),
-          IconButton(
-            icon: const Icon(Icons.settings),
-            onPressed: () {},
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-            child: CircleAvatar(
-              backgroundColor: Colors.deepPurple,
-              child: const Text(
-                'MG',
+        ],
+      ),
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              child: Text(
+                'Abril 2025',
                 style: TextStyle(
-                  color: Colors.white,
+                  fontSize: 20,
                   fontWeight: FontWeight.bold,
+                  color: Colors.white,
                 ),
               ),
             ),
-          ),
-        ],
+            SummaryCard(financeData: currentFinances),
+            ExpenseSection(
+              title: 'Despesas Base',
+              expenses: baseExpenses,
+              showDueDate: true,
+              showTotal: true,
+            ),
+            ExpenseSection(
+              title: 'Despesas Recentes',
+              expenses: recentExpenses,
+              actionText: 'Ver Todas',
+              onActionTap: () {},
+            ),
+            const SizedBox(height: 80), // Space for FAB
+          ],
+        ),
       ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Padding(
-            padding: EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Meus Consoles',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-                Text(
-                  'Toque para ver seus jogos',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Expanded(
-            child: ListView.builder(
-              itemCount: demoConsoles.length + 1, // +1 for the "Add Console" button
-              itemBuilder: (context, index) {
-                if (index < demoConsoles.length) {
-                  return ConsoleListItem(console: demoConsoles[index]);
-                } else {
-                  return AddConsoleButton();
-                }
-              },
-            ),
-          ),
-        ],
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {},
+        backgroundColor: Colors.blue,
+        child: const Icon(Icons.add),
       ),
       bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: Colors.black,
-        selectedItemColor: Colors.deepPurple,
+        backgroundColor: const Color(0xFF0A0E1A),
+        selectedItemColor: Colors.blue,
         unselectedItemColor: Colors.grey,
+        currentIndex: 0,
         items: const [
           BottomNavigationBarItem(
-            icon: Icon(Icons.videogame_asset),
-            label: '',
+            icon: Icon(Icons.home),
+            label: 'Início',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.history),
-            label: '',
+            icon: Icon(Icons.receipt_long),
+            label: 'Despesas Base',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.settings),
+            label: 'Configurações',
           ),
         ],
-      ),
-    );
-  }
-}
-
-class AddConsoleButton extends StatelessWidget {
-  const AddConsoleButton({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(10),
-          color: Colors.grey[900],
-        ),
-        child: ListTile(
-          leading: Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: Colors.deepPurple.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: const Icon(
-              Icons.add,
-              color: Colors.deepPurple,
-            ),
-          ),
-          title: const Text(
-            'Adicionar Console',
-            style: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          trailing: const Icon(
-            Icons.chevron_right,
-            color: Colors.grey,
-          ),
-          onTap: () {},
-        ),
       ),
     );
   }

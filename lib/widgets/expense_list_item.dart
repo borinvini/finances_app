@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
-import '../models/console.dart';
+import '../models/expense.dart';
 
-class ConsoleListItem extends StatelessWidget {
-  final Console console;
+class ExpenseListItem extends StatelessWidget {
+  final Expense expense;
+  final bool showDueDate;
 
-  const ConsoleListItem({
+  const ExpenseListItem({
     super.key,
-    required this.console,
+    required this.expense,
+    this.showDueDate = false,
   });
 
   @override
@@ -16,42 +18,44 @@ class ConsoleListItem extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(10),
-          color: Colors.grey[900],
+          color: const Color(0xFF1A1F2E),
         ),
         child: ListTile(
           leading: Container(
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: console.iconBackgroundColor,
+              color: expense.iconBackgroundColor,
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(
-              console.icon,
+              expense.icon,
               color: Colors.white,
             ),
           ),
           title: Text(
-            console.name,
+            expense.name,
             style: const TextStyle(
               fontWeight: FontWeight.bold,
               color: Colors.white,
             ),
           ),
           subtitle: Text(
-            '${console.gameCount} jogos',
+            showDueDate 
+              ? 'Vencimento dia ${expense.dueDay}'
+              : '${expense.category} • ${expense.date.day.toString().padLeft(2, '0')} Abr',
             style: TextStyle(
               color: Colors.grey[400],
               fontSize: 12,
             ),
           ),
-          trailing: const Icon(
-            Icons.chevron_right,
-            color: Colors.grey,
+          trailing: Text(
+            'R\$ ${expense.amount.toStringAsFixed(2)}',
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
           ),
-          onTap: () {
-            // Navigate to console detail page
-          },
         ),
       ),
     );
