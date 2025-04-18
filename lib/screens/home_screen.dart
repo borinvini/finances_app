@@ -4,7 +4,7 @@ import '../models/expense.dart';
 import '../models/finance_data.dart';
 import '../widgets/summary_card.dart';
 import '../widgets/expense_section.dart';
-import 'base_expenses_screen.dart';
+import 'fixed_budget_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -16,9 +16,9 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
   
-  // Total das despesas base
-  double get totalBaseExpenses => 
-      baseExpenses.fold(0, (sum, expense) => sum + expense.amount);
+  // Total do orçamento fixo
+  double get totalFixedBudget => 
+      fixedBudgetItems.fold(0, (sum, expense) => sum + expense.amount);
 
   @override
   Widget build(BuildContext context) {
@@ -73,7 +73,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.receipt_long),
-            label: 'Despesas Base',
+            label: 'Orçamento Fixo',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.flag),
@@ -89,7 +89,7 @@ class _HomeScreenState extends State<HomeScreen> {
       case 0:
         return _buildHomeTab();
       case 1:
-        return const BaseExpensesScreen();
+        return const FixedBudgetScreen();
       case 2:
         // Placeholder for "Despesas no Brasil" tab
         return const Center(
@@ -122,14 +122,14 @@ class _HomeScreenState extends State<HomeScreen> {
           SummaryCard(financeData: currentFinances),
           const SizedBox(height: 12),
           
-          // Apenas o total das despesas base, sem listar os itens
+          // Apenas o total do orçamento fixo, sem listar os itens
           Padding(
             padding: const EdgeInsets.fromLTRB(12.0, 8.0, 12.0, 4.0),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text(
-                  'Despesas Base',
+                  'Orçamento Fixo',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -139,7 +139,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 GestureDetector(
                   onTap: () {
                     setState(() {
-                      _currentIndex = 1; // Navegar para a aba Despesas Base
+                      _currentIndex = 1; // Navegar para a aba Orçamento Fixo
                     });
                   },
                   child: const Text(
@@ -168,7 +168,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Text(
-                    'Total Despesas Base',
+                    'Total Orçamento Fixo',
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
@@ -176,7 +176,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                   Text(
-                    '€ ${totalBaseExpenses.toStringAsFixed(2)}',
+                    '€ ${totalFixedBudget.toStringAsFixed(2)}',
                     style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.bold,

@@ -20,7 +20,7 @@ class Expense {
   });
 }
 
-List<Expense> baseExpenses = [
+List<Expense> fixedBudgetItems = [
   Expense(
     name: 'Aluguel',
     amount: 1200.00,

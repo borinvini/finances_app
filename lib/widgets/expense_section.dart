@@ -67,7 +67,7 @@ class ExpenseSection extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text(
-                  'Total Despesas Base',
+                  'Total Orçamento Fixo',
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.bold,

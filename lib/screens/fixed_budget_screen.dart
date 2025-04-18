@@ -1,14 +1,14 @@
-// lib/screens/base_expenses_screen.dart
+// lib/screens/fixed_budget_screen.dart
 import 'package:flutter/material.dart';
 import '../models/expense.dart';
 import '../widgets/compact_expense_list_item.dart';
 
-class BaseExpensesScreen extends StatelessWidget {
-  const BaseExpensesScreen({super.key});
+class FixedBudgetScreen extends StatelessWidget {
+  const FixedBudgetScreen({super.key});
 
-  // Calcular o total das despesas base
+  // Calcular o total do orçamento fixo
   double get totalAmount => 
-      baseExpenses.fold(0, (sum, expense) => sum + expense.amount);
+      fixedBudgetItems.fold(0, (sum, expense) => sum + expense.amount);
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +20,7 @@ class BaseExpensesScreen extends StatelessWidget {
           const Padding(
             padding: EdgeInsets.fromLTRB(12.0, 12.0, 12.0, 4.0),
             child: Text(
-              'Despesas Base - Abril 2025',
+              'Orçamento Fixo - Abril 2025',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -33,7 +33,7 @@ class BaseExpensesScreen extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.fromLTRB(12.0, 0, 12.0, 12.0),
             child: Text(
-              'Despesas fixas mensais que você precisa pagar.',
+              'Despesas e receitas fixas mensais que você gerencia.',
               style: TextStyle(
                 fontSize: 13,
                 color: Colors.grey[400],
@@ -41,13 +41,13 @@ class BaseExpensesScreen extends StatelessWidget {
             ),
           ),
           
-          // Lista completa das despesas base
-          ...baseExpenses.map((expense) => CompactExpenseListItem(
+          // Lista completa do orçamento fixo
+          ...fixedBudgetItems.map((expense) => CompactExpenseListItem(
             expense: expense,
             showDueDate: true,
           )).toList(),
           
-          // Total das despesas base
+          // Total do orçamento fixo
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Container(
@@ -61,7 +61,7 @@ class BaseExpensesScreen extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Text(
-                    'Total Despesas Base',
+                    'Total Orçamento Fixo',
                     style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.bold,
