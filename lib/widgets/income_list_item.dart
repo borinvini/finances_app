@@ -1,16 +1,14 @@
 import 'package:flutter/material.dart';
 import '../models/expense.dart';
 
-class CompactExpenseListItem extends StatelessWidget {
-  final Expense expense;
-  final bool showDueDate;
-  final Function(bool?)? onPaidChanged; // New callback for paid status changes
+class IncomeListItem extends StatelessWidget {
+  final Income income;
+  final Function(bool?) onReceivedChanged;
 
-  const CompactExpenseListItem({
+  const IncomeListItem({
     super.key,
-    required this.expense,
-    this.showDueDate = false,
-    this.onPaidChanged,
+    required this.income,
+    required this.onReceivedChanged,
   });
 
   @override
@@ -25,25 +23,24 @@ class CompactExpenseListItem extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 6.0),
         child: Row(
           children: [
-            // Checkbox for paid status
-            if (onPaidChanged != null)
-              Checkbox(
-                value: expense.paid,
-                onChanged: onPaidChanged,
-                activeColor: Colors.blue,
-                checkColor: Colors.white,
-                side: const BorderSide(color: Colors.grey, width: 1.5),
-              ),
+            // Checkbox for received status
+            Checkbox(
+              value: income.received,
+              onChanged: onReceivedChanged,
+              activeColor: Colors.green,
+              checkColor: Colors.white,
+              side: const BorderSide(color: Colors.grey, width: 1.5),
+            ),
             // Leading icon
             Container(
               width: 32,
               height: 32,
               decoration: BoxDecoration(
-                color: expense.iconBackgroundColor,
+                color: income.iconBackgroundColor,
                 borderRadius: BorderRadius.circular(6),
               ),
               child: Icon(
-                expense.icon,
+                income.icon,
                 color: Colors.white,
                 size: 18,
               ),
@@ -56,18 +53,15 @@ class CompactExpenseListItem extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    expense.name,
+                    income.name,
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      color: expense.paid ? Colors.grey : Colors.white,
+                      color: income.received ? Colors.grey[400] : Colors.white,
                       fontSize: 13,
-                      decoration: expense.paid ? TextDecoration.lineThrough : null,
                     ),
                   ),
                   Text(
-                    showDueDate 
-                      ? 'Vencimento dia ${expense.dueDay}'
-                      : '${expense.category} • ${expense.date.day.toString().padLeft(2, '0')} Abr',
+                    'Recebimento dia ${income.receiveDay}',
                     style: TextStyle(
                       color: Colors.grey[400],
                       fontSize: 11,
@@ -78,12 +72,11 @@ class CompactExpenseListItem extends StatelessWidget {
             ),
             // Trailing amount
             Text(
-              '€ ${expense.amount.toStringAsFixed(2)}',
+              '€ ${income.amount.toStringAsFixed(2)}',
               style: TextStyle(
                 fontWeight: FontWeight.bold,
-                color: expense.paid ? Colors.grey : Colors.white,
+                color: Colors.green[income.received ? 300 : 500],
                 fontSize: 13,
-                decoration: expense.paid ? TextDecoration.lineThrough : null,
               ),
             ),
           ],
