@@ -69,7 +69,7 @@ class CompactExpenseListItem extends StatelessWidget {
             ),
             // Trailing amount
             Text(
-              'R\$ ${expense.amount.toStringAsFixed(2)}',
+              '€ ${expense.amount.toStringAsFixed(2)}',
               style: const TextStyle(
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
@@ -82,6 +82,3 @@ class CompactExpenseListItem extends StatelessWidget {
     );
   }
 }
-
-// Usage example:
-// Replace all instances of ExpenseListItem with CompactExpenseListItem in expense_section.dart

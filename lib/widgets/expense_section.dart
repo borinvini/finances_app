@@ -75,7 +75,7 @@ class ExpenseSection extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  'R\$ ${totalAmount.toStringAsFixed(2)}',
+                  '€ ${totalAmount.toStringAsFixed(2)}',
                   style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.bold,

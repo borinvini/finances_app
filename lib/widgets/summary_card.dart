@@ -31,7 +31,7 @@ class SummaryCard extends StatelessWidget {
             ),
             const SizedBox(height: 2), // Reduced spacing
             Text(
-              'R\$ ${financeData.balance.toStringAsFixed(2)}',
+              '€ ${financeData.balance.toStringAsFixed(2)}',
               style: const TextStyle(
                 color: Colors.white,
                 fontSize: 20, // Smaller font
@@ -69,7 +69,7 @@ class SummaryCard extends StatelessWidget {
                           ),
                         ),
                         Text(
-                          'R\$ ${financeData.income.toStringAsFixed(2)}',
+                          '€ ${financeData.income.toStringAsFixed(2)}',
                           style: const TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
@@ -107,7 +107,7 @@ class SummaryCard extends StatelessWidget {
                           ),
                         ),
                         Text(
-                          'R\$ ${financeData.expenses.toStringAsFixed(2)}',
+                          '€ ${financeData.expenses.toStringAsFixed(2)}',
                           style: const TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,

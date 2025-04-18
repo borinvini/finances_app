@@ -92,9 +92,9 @@ class HomeScreen extends StatelessWidget {
             icon: Icon(Icons.receipt_long),
             label: 'Despesas Base',
           ),
-          // Configurações substituído por Despesas no Brasil
+          // Trocando o ícone para a bandeira do Brasil
           BottomNavigationBarItem(
-            icon: Icon(Icons.public),
+            icon: Icon(Icons.flag),
             label: 'Despesas no Brasil',
           ),
         ],
