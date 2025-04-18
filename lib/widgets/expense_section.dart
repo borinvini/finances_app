@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/expense.dart';
-import 'expense_list_item.dart';
+// Import the new component
+import 'compact_expense_list_item.dart';
 
 class ExpenseSection extends StatelessWidget {
   final String title;
@@ -28,14 +29,14 @@ class ExpenseSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.fromLTRB(12.0, 8.0, 12.0, 4.0),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
                 title,
                 style: const TextStyle(
-                  fontSize: 18,
+                  fontSize: 16,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
                 ),
@@ -46,7 +47,7 @@ class ExpenseSection extends StatelessWidget {
                   child: Text(
                     actionText!,
                     style: const TextStyle(
-                      fontSize: 14,
+                      fontSize: 13,
                       color: Colors.blue,
                     ),
                   ),
@@ -54,20 +55,21 @@ class ExpenseSection extends StatelessWidget {
             ],
           ),
         ),
-        ...expenses.map((expense) => ExpenseListItem(
+        // Use CompactExpenseListItem instead of ExpenseListItem
+        ...expenses.map((expense) => CompactExpenseListItem(
               expense: expense,
               showDueDate: showDueDate,
             )),
         if (showTotal)
           Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.fromLTRB(12.0, 8.0, 12.0, 8.0),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text(
                   'Total Despesas Base',
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: 14,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
                   ),
@@ -75,7 +77,7 @@ class ExpenseSection extends StatelessWidget {
                 Text(
                   'R\$ ${totalAmount.toStringAsFixed(2)}',
                   style: const TextStyle(
-                    fontSize: 16,
+                    fontSize: 14,
                     fontWeight: FontWeight.bold,
                     color: Colors.blue,
                   ),

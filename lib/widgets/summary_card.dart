@@ -12,13 +12,13 @@ class SummaryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: const EdgeInsets.all(16.0),
+      margin: const EdgeInsets.fromLTRB(12.0, 8.0, 12.0, 8.0), // Reduced margin
       color: const Color(0xFF1A1F2E),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(12), // Smaller radius
       ),
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(12.0), // Reduced padding
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -26,38 +26,38 @@ class SummaryCard extends StatelessWidget {
               'Saldo Atual',
               style: TextStyle(
                 color: Colors.white70,
-                fontSize: 14,
+                fontSize: 13, // Smaller font
               ),
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 2), // Reduced spacing
             Text(
               'R\$ ${financeData.balance.toStringAsFixed(2)}',
               style: const TextStyle(
                 color: Colors.white,
-                fontSize: 24,
+                fontSize: 20, // Smaller font
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12), // Reduced spacing
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Row(
                   children: [
                     Container(
-                      width: 32,
-                      height: 32,
+                      width: 28, // Smaller container
+                      height: 28, // Smaller container
                       decoration: BoxDecoration(
                         color: Colors.green.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(6), // Smaller radius
                       ),
                       child: const Icon(
                         Icons.arrow_upward,
                         color: Colors.green,
-                        size: 20,
+                        size: 18, // Smaller icon
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: 6), // Reduced spacing
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -65,7 +65,7 @@ class SummaryCard extends StatelessWidget {
                           'Receitas',
                           style: TextStyle(
                             color: Colors.white70,
-                            fontSize: 12,
+                            fontSize: 11, // Smaller font
                           ),
                         ),
                         Text(
@@ -73,6 +73,7 @@ class SummaryCard extends StatelessWidget {
                           style: const TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
+                            fontSize: 13, // Smaller font
                           ),
                         ),
                       ],
@@ -82,19 +83,19 @@ class SummaryCard extends StatelessWidget {
                 Row(
                   children: [
                     Container(
-                      width: 32,
-                      height: 32,
+                      width: 28, // Smaller container
+                      height: 28, // Smaller container
                       decoration: BoxDecoration(
                         color: Colors.red.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(6), // Smaller radius
                       ),
                       child: const Icon(
                         Icons.arrow_downward,
                         color: Colors.red,
-                        size: 20,
+                        size: 18, // Smaller icon
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: 6), // Reduced spacing
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -102,7 +103,7 @@ class SummaryCard extends StatelessWidget {
                           'Despesas',
                           style: TextStyle(
                             color: Colors.white70,
-                            fontSize: 12,
+                            fontSize: 11, // Smaller font
                           ),
                         ),
                         Text(
@@ -110,6 +111,7 @@ class SummaryCard extends StatelessWidget {
                           style: const TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
+                            fontSize: 13, // Smaller font
                           ),
                         ),
                       ],

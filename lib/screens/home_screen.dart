@@ -12,17 +12,20 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        toolbarHeight: 56, // Slightly shorter app bar
         title: const Text(
           'Minhas Finanças',
           style: TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,
+            fontSize: 18, // Smaller font
           ),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.calendar_today, color: Colors.white),
+            icon: const Icon(Icons.calendar_today, color: Colors.white, size: 20), // Smaller icon
             onPressed: () {},
+            padding: const EdgeInsets.symmetric(horizontal: 12), // Smaller padding
           ),
         ],
       ),
@@ -31,43 +34,49 @@ class HomeScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              padding: EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0), // Reduced padding
               child: Text(
                 'Abril 2025',
                 style: TextStyle(
-                  fontSize: 20,
+                  fontSize: 18, // Smaller font
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
                 ),
               ),
             ),
             SummaryCard(financeData: currentFinances),
+            const SizedBox(height: 4), // Add small spacing between sections
             ExpenseSection(
               title: 'Despesas Base',
               expenses: baseExpenses,
               showDueDate: true,
               showTotal: true,
             ),
+            const SizedBox(height: 4), // Add small spacing between sections
             ExpenseSection(
               title: 'Despesas Recentes',
               expenses: recentExpenses,
               actionText: 'Ver Todas',
               onActionTap: () {},
             ),
-            const SizedBox(height: 80), // Space for FAB
+            const SizedBox(height: 60), // Reduced space for FAB
           ],
         ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {},
         backgroundColor: Colors.blue,
-        child: const Icon(Icons.add),
+        mini: true, // Use smaller FAB
+        child: const Icon(Icons.add, size: 20), // Smaller icon
       ),
       bottomNavigationBar: BottomNavigationBar(
         backgroundColor: const Color(0xFF0A0E1A),
         selectedItemColor: Colors.blue,
         unselectedItemColor: Colors.grey,
         currentIndex: 0,
+        selectedFontSize: 12, // Smaller font
+        unselectedFontSize: 12, // Smaller font
+        iconSize: 20, // Smaller icons
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.home),

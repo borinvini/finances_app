@@ -14,23 +14,26 @@ class ExpenseListItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 4.0), // Reduced padding
       child: Container(
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(8), // Smaller radius
           color: const Color(0xFF1A1F2E),
         ),
         child: ListTile(
+          dense: true, // Make ListTile more compact
+          contentPadding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 0), // Reduced padding
           leading: Container(
-            width: 40,
-            height: 40,
+            width: 36, // Smaller icon
+            height: 36, // Smaller icon
             decoration: BoxDecoration(
               color: expense.iconBackgroundColor,
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(6), // Smaller radius
             ),
             child: Icon(
               expense.icon,
               color: Colors.white,
+              size: 20, // Smaller icon
             ),
           ),
           title: Text(
@@ -38,6 +41,7 @@ class ExpenseListItem extends StatelessWidget {
             style: const TextStyle(
               fontWeight: FontWeight.bold,
               color: Colors.white,
+              fontSize: 14, // Smaller font
             ),
           ),
           subtitle: Text(
@@ -46,7 +50,7 @@ class ExpenseListItem extends StatelessWidget {
               : '${expense.category} • ${expense.date.day.toString().padLeft(2, '0')} Abr',
             style: TextStyle(
               color: Colors.grey[400],
-              fontSize: 12,
+              fontSize: 11, // Smaller font
             ),
           ),
           trailing: Text(
@@ -54,6 +58,7 @@ class ExpenseListItem extends StatelessWidget {
             style: const TextStyle(
               fontWeight: FontWeight.bold,
               color: Colors.white,
+              fontSize: 14, // Smaller font
             ),
           ),
         ),
