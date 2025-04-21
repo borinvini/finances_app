@@ -1,10 +1,11 @@
 // lib/screens/home_screen.dart
 import 'package:flutter/material.dart';
-import '../models/expense.dart';
-import '../models/finance_data.dart';
+import 'package:provider/provider.dart';
+import '../providers/finance_provider.dart';
 import '../widgets/summary_card.dart';
 import '../widgets/expense_section.dart';
 import 'fixed_budget_screen.dart';
+import 'add_transaction_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -16,10 +17,6 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
   
-  // Total do orçamento fixo
-  double get totalFixedBudget => 
-      fixedBudgetItems.fold(0, (sum, expense) => sum + expense.amount);
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -48,7 +45,15 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       body: _buildBody(),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const AddTransactionScreen()),
+          ).then((_) {
+            // Refresh data when coming back from add screen
+            Provider.of<FinanceProvider>(context, listen: false).loadAllData();
+          });
+        },
         backgroundColor: Colors.blue,
         mini: true,
         child: const Icon(Icons.add, size: 20),
@@ -104,92 +109,96 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildHomeTab() {
-    return SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SummaryCard(financeData: currentFinances),
-          const SizedBox(height: 12),
-          
-          // Apenas o total do orçamento fixo, sem listar os itens
-          Padding(
-            padding: const EdgeInsets.fromLTRB(12.0, 8.0, 12.0, 4.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  'Orçamento Fixo',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
+    return Consumer<FinanceProvider>(
+      builder: (context, provider, child) {
+        return SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SummaryCard(financeData: provider.currentFinanceData),
+              const SizedBox(height: 12),
+              
+              // Apenas o total do orçamento fixo, sem listar os itens
+              Padding(
+                padding: const EdgeInsets.fromLTRB(12.0, 8.0, 12.0, 4.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Orçamento Fixo',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _currentIndex = 1; // Navegar para a aba Orçamento Fixo
+                        });
+                      },
+                      child: const Text(
+                        'Ver Detalhes',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Colors.blue,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              
+              // Card para mostrar apenas o total
+              Padding(
+                padding: const EdgeInsets.fromLTRB(12.0, 0, 12.0, 12.0),
+                child: Container(
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8),
+                    color: const Color(0xFF1A1F2E),
+                  ),
+                  padding: const EdgeInsets.all(12.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Total',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                      Text(
+                        '€ ${provider.totalFixedBudget.toStringAsFixed(2)}',
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.blue,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      _currentIndex = 1; // Navegar para a aba Orçamento Fixo
-                    });
-                  },
-                  child: const Text(
-                    'Ver Detalhes',
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Colors.blue,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          
-          // Card para mostrar apenas o total
-          Padding(
-            padding: const EdgeInsets.fromLTRB(12.0, 0, 12.0, 12.0),
-            child: Container(
-              width: double.infinity,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(8),
-                color: const Color(0xFF1A1F2E),
               ),
-              padding: const EdgeInsets.all(12.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Total',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                  Text(
-                    '€ ${totalFixedBudget.toStringAsFixed(2)}',
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.blue,
-                    ),
-                  ),
-                ],
+              
+              const SizedBox(height: 4),
+              
+              // Manter a seção de Despesas Recentes
+              ExpenseSection(
+                title: 'Despesas Recentes',
+                expenses: provider.recentExpenses,
+                actionText: 'Ver Todas',
+                onActionTap: () {},
               ),
-            ),
+              
+              const SizedBox(height: 60),
+            ],
           ),
-          
-          const SizedBox(height: 4),
-          
-          // Manter a seção de Despesas Recentes como está
-          ExpenseSection(
-            title: 'Despesas Recentes',
-            expenses: recentExpenses,
-            actionText: 'Ver Todas',
-            onActionTap: () {},
-          ),
-          
-          const SizedBox(height: 60),
-        ],
-      ),
+        );
+      },
     );
   }
 }

@@ -23,7 +23,17 @@ class IncomeListItem extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 6.0),
         child: Row(
           children: [
-            // Leading icon - no checkbox here anymore
+            // Checkbox for received status
+            if (onReceivedChanged != null)
+              Checkbox(
+                value: income.received,
+                onChanged: onReceivedChanged,
+                activeColor: Colors.green,
+                checkColor: Colors.white,
+                side: const BorderSide(color: Colors.grey, width: 1.5),
+              ),
+            
+            // Leading icon
             Container(
               width: 32,
               height: 32,
@@ -38,6 +48,7 @@ class IncomeListItem extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 8),
+            
             // Title and subtitle
             Expanded(
               child: Column(
@@ -50,6 +61,7 @@ class IncomeListItem extends StatelessWidget {
                       fontWeight: FontWeight.bold,
                       color: income.received ? Colors.grey[400] : Colors.white,
                       fontSize: 13,
+                      decoration: income.received ? TextDecoration.lineThrough : null,
                     ),
                   ),
                   Text(
@@ -62,6 +74,7 @@ class IncomeListItem extends StatelessWidget {
                 ],
               ),
             ),
+            
             // Trailing amount
             Text(
               '€ ${income.amount.toStringAsFixed(2)}',
@@ -69,6 +82,7 @@ class IncomeListItem extends StatelessWidget {
                 fontWeight: FontWeight.bold,
                 color: Colors.green[income.received ? 300 : 500],
                 fontSize: 13,
+                decoration: income.received ? TextDecoration.lineThrough : null,
               ),
             ),
           ],

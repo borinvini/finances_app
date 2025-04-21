@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 class Expense {
+  final int? id; // ID for database (nullable for new records)
   final String name;
   final double amount;
   final IconData icon;
@@ -8,9 +9,10 @@ class Expense {
   final String category;
   final DateTime date;
   final int dueDay;
-  bool paid; // New field to track if the expense has been paid
+  bool paid;
 
   Expense({
+    this.id,
     required this.name,
     required this.amount,
     required this.icon,
@@ -18,12 +20,100 @@ class Expense {
     required this.category,
     required this.date,
     this.dueDay = 0,
-    this.paid = false, // Default to not paid
+    this.paid = false,
   });
+
+  // Convert Expense object to a Map for SQLite
+  Map<String, dynamic> toMap() {
+    return {
+      if (id != null) 'id': id,
+      'name': name,
+      'amount': amount,
+      'iconName': iconToString(icon),
+      'iconColorValue': iconBackgroundColor.value,
+      'category': category,
+      'date': date.toIso8601String(),
+      'dueDay': dueDay,
+      'paid': paid ? 1 : 0,
+    };
+  }
+
+  // Create an Expense object from a SQLite map
+  factory Expense.fromMap(Map<String, dynamic> map) {
+    return Expense(
+      id: map['id'],
+      name: map['name'],
+      amount: map['amount'],
+      icon: stringToIcon(map['iconName']),
+      iconBackgroundColor: Color(map['iconColorValue']),
+      category: map['category'],
+      date: DateTime.parse(map['date']),
+      dueDay: map['dueDay'] ?? 0,
+      paid: map['paid'] == 1,
+    );
+  }
+  
+  // Helper methods to convert IconData to/from string
+  static String iconToString(IconData icon) {
+    // This is a simple mapping - expand for more icons as needed
+    if (icon == Icons.home) return 'home';
+    if (icon == Icons.bolt) return 'bolt';
+    if (icon == Icons.wifi) return 'wifi';
+    if (icon == Icons.water_drop) return 'water_drop';
+    if (icon == Icons.shopping_cart) return 'shopping_cart';
+    if (icon == Icons.movie) return 'movie';
+    if (icon == Icons.medication) return 'medication';
+    if (icon == Icons.fastfood) return 'fastfood';
+    if (icon == Icons.directions_car) return 'directions_car';
+    if (icon == Icons.phone_android) return 'phone_android';
+    
+    return 'attach_money'; // Default icon
+  }
+  
+  static IconData stringToIcon(String iconName) {
+    switch(iconName) {
+      case 'home': return Icons.home;
+      case 'bolt': return Icons.bolt;
+      case 'wifi': return Icons.wifi;
+      case 'water_drop': return Icons.water_drop;
+      case 'shopping_cart': return Icons.shopping_cart;
+      case 'movie': return Icons.movie;
+      case 'medication': return Icons.medication;
+      case 'fastfood': return Icons.fastfood;
+      case 'directions_car': return Icons.directions_car;
+      case 'phone_android': return Icons.phone_android;
+      default: return Icons.attach_money;
+    }
+  }
+  
+  // Copy an expense with some fields changed
+  Expense copyWith({
+    int? id,
+    String? name,
+    double? amount,
+    IconData? icon,
+    Color? iconBackgroundColor,
+    String? category,
+    DateTime? date,
+    int? dueDay,
+    bool? paid,
+  }) {
+    return Expense(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      amount: amount ?? this.amount,
+      icon: icon ?? this.icon,
+      iconBackgroundColor: iconBackgroundColor ?? this.iconBackgroundColor,
+      category: category ?? this.category,
+      date: date ?? this.date,
+      dueDay: dueDay ?? this.dueDay,
+      paid: paid ?? this.paid,
+    );
+  }
 }
 
-// New class for income items
 class Income {
+  final int? id; // ID for database (nullable for new records)
   final String name;
   final double amount;
   final IconData icon;
@@ -34,6 +124,7 @@ class Income {
   bool received;
 
   Income({
+    this.id,
     required this.name,
     required this.amount,
     required this.icon,
@@ -43,94 +134,59 @@ class Income {
     this.receiveDay = 0,
     this.received = false,
   });
+
+  // Convert Income object to a Map for SQLite
+  Map<String, dynamic> toMap() {
+    return {
+      if (id != null) 'id': id,
+      'name': name,
+      'amount': amount,
+      'iconName': Expense.iconToString(icon), // Reuse icon conversion
+      'iconColorValue': iconBackgroundColor.value,
+      'category': category,
+      'date': date.toIso8601String(),
+      'receiveDay': receiveDay,
+      'received': received ? 1 : 0,
+    };
+  }
+
+  // Create an Income object from a SQLite map
+  factory Income.fromMap(Map<String, dynamic> map) {
+    return Income(
+      id: map['id'],
+      name: map['name'],
+      amount: map['amount'],
+      icon: Expense.stringToIcon(map['iconName']), // Reuse icon conversion
+      iconBackgroundColor: Color(map['iconColorValue']),
+      category: map['category'],
+      date: DateTime.parse(map['date']),
+      receiveDay: map['receiveDay'] ?? 0,
+      received: map['received'] == 1,
+    );
+  }
+  
+  // Copy an income with some fields changed
+  Income copyWith({
+    int? id,
+    String? name,
+    double? amount,
+    IconData? icon,
+    Color? iconBackgroundColor,
+    String? category,
+    DateTime? date,
+    int? receiveDay,
+    bool? received,
+  }) {
+    return Income(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      amount: amount ?? this.amount,
+      icon: icon ?? this.icon,
+      iconBackgroundColor: iconBackgroundColor ?? this.iconBackgroundColor,
+      category: category ?? this.category,
+      date: date ?? this.date,
+      receiveDay: receiveDay ?? this.receiveDay,
+      received: received ?? this.received,
+    );
+  }
 }
-
-// Sample income data
-List<Income> fixedIncomeItems = [
-  Income(
-    name: 'Salário',
-    amount: 4000.00,
-    icon: Icons.account_balance_wallet,
-    iconBackgroundColor: Colors.green.shade700,
-    category: 'Trabalho',
-    date: DateTime(2025, 4, 5),
-    receiveDay: 5,
-    received: true,
-  ),
-  Income(
-    name: 'Freelance',
-    amount: 500.00,
-    icon: Icons.work,
-    iconBackgroundColor: Colors.green.shade500,
-    category: 'Trabalho Extra',
-    date: DateTime(2025, 4, 20),
-    receiveDay: 20,
-  ),
-];
-
-List<Expense> fixedBudgetItems = [
-  Expense(
-    name: 'Aluguel',
-    amount: 1200.00,
-    icon: Icons.home,
-    iconBackgroundColor: Colors.blue.shade700,
-    category: 'Moradia',
-    date: DateTime(2025, 4, 10),
-    dueDay: 10,
-  ),
-  Expense(
-    name: 'Energia',
-    amount: 245.00,
-    icon: Icons.bolt,
-    iconBackgroundColor: Colors.amber.shade700,
-    category: 'Serviços',
-    date: DateTime(2025, 4, 15),
-    dueDay: 15,
-    paid: true,
-  ),
-  Expense(
-    name: 'Internet',
-    amount: 120.00,
-    icon: Icons.wifi,
-    iconBackgroundColor: Colors.blue.shade500,
-    category: 'Serviços',
-    date: DateTime(2025, 4, 20),
-    dueDay: 20,
-  ),
-  Expense(
-    name: 'Água',
-    amount: 85.00,
-    icon: Icons.water_drop,
-    iconBackgroundColor: Colors.blue.shade300,
-    category: 'Serviços',
-    date: DateTime(2025, 4, 15),
-    dueDay: 15,
-  ),
-];
-
-List<Expense> recentExpenses = [
-  Expense(
-    name: 'Supermercado Extra',
-    amount: 320.45,
-    icon: Icons.shopping_cart,
-    iconBackgroundColor: Colors.red.shade700,
-    category: 'Alimentação',
-    date: DateTime(2025, 4, 18),
-  ),
-  Expense(
-    name: 'Netflix',
-    amount: 39.90,
-    icon: Icons.movie,
-    iconBackgroundColor: Colors.red.shade700,
-    category: 'Entretenimento',
-    date: DateTime(2025, 4, 15),
-  ),
-  Expense(
-    name: 'Farmácia',
-    amount: 67.50,
-    icon: Icons.medication,
-    iconBackgroundColor: Colors.red.shade700,
-    category: 'Saúde',
-    date: DateTime(2025, 4, 8),
-  ),
-];
