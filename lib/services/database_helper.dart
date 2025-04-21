@@ -1,4 +1,4 @@
-// lib/data/database_helper.dart
+// lib/services/database_helper.dart
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:path/path.dart';
@@ -6,6 +6,7 @@ import 'package:sqflite/sqflite.dart';
 
 import '../models/expense.dart';
 import '../models/finance_data.dart';
+import '../database/schema.dart'; // Import the schema
 
 class DatabaseHelper {
   static final DatabaseHelper _instance = DatabaseHelper._internal();
@@ -29,59 +30,23 @@ class DatabaseHelper {
     // Open/create the database
     return await openDatabase(
       path,
-      version: 1,
+      version: DatabaseSchema.schemaVersion,
       onCreate: _createDb,
     );
   }
 
   Future<void> _createDb(Database db, int version) async {
-    // Create expenses table
-    await db.execute('''
-      CREATE TABLE expenses(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL,
-        amount REAL NOT NULL,
-        iconName TEXT NOT NULL,
-        iconColorValue INTEGER NOT NULL,
-        category TEXT NOT NULL,
-        date TEXT NOT NULL,
-        dueDay INTEGER,
-        paid INTEGER NOT NULL
-      )
-    ''');
-    
-    // Create incomes table
-    await db.execute('''
-      CREATE TABLE incomes(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL,
-        amount REAL NOT NULL,
-        iconName TEXT NOT NULL,
-        iconColorValue INTEGER NOT NULL,
-        category TEXT NOT NULL,
-        date TEXT NOT NULL,
-        receiveDay INTEGER,
-        received INTEGER NOT NULL
-      )
-    ''');
-    
-    // Create finance_data table for monthly summaries
-    await db.execute('''
-      CREATE TABLE finance_data(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        balance REAL NOT NULL,
-        income REAL NOT NULL,
-        expenses REAL NOT NULL,
-        month TEXT NOT NULL
-      )
-    ''');
+    // Create all tables from the schema
+    for (String createStatement in DatabaseSchema.createTableStatements) {
+      await db.execute(createStatement);
+    }
   }
 
   // EXPENSE CRUD OPERATIONS
   Future<int> insertExpense(Expense expense) async {
     final db = await database;
     return await db.insert(
-      'expenses',
+      DatabaseSchema.expensesTable,
       expense.toMap(),
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
@@ -89,7 +54,7 @@ class DatabaseHelper {
   
   Future<List<Expense>> getExpenses() async {
     final db = await database;
-    final List<Map<String, dynamic>> maps = await db.query('expenses');
+    final List<Map<String, dynamic>> maps = await db.query(DatabaseSchema.expensesTable);
     
     return List.generate(maps.length, (i) {
       return Expense.fromMap(maps[i]);
@@ -98,10 +63,8 @@ class DatabaseHelper {
   
   Future<List<Expense>> getRecentExpenses({int limit = 5}) async {
     final db = await database;
-    final List<Map<String, dynamic>> maps = await db.query(
-      'expenses',
-      orderBy: 'date DESC',
-      limit: limit,
+    final List<Map<String, dynamic>> maps = await db.rawQuery(
+      '${DatabaseSchema.getRecentExpensesQuery} LIMIT $limit'
     );
     
     return List.generate(maps.length, (i) {
@@ -111,10 +74,8 @@ class DatabaseHelper {
   
   Future<List<Expense>> getFixedExpenses() async {
     final db = await database;
-    final List<Map<String, dynamic>> maps = await db.query(
-      'expenses',
-      where: 'dueDay > 0',
-      orderBy: 'dueDay ASC',
+    final List<Map<String, dynamic>> maps = await db.rawQuery(
+      DatabaseSchema.getFixedExpensesQuery
     );
     
     return List.generate(maps.length, (i) {
@@ -125,7 +86,7 @@ class DatabaseHelper {
   Future<int> updateExpense(Expense expense) async {
     final db = await database;
     return await db.update(
-      'expenses',
+      DatabaseSchema.expensesTable,
       expense.toMap(),
       where: 'id = ?',
       whereArgs: [expense.id],
@@ -135,7 +96,7 @@ class DatabaseHelper {
   Future<int> deleteExpense(int id) async {
     final db = await database;
     return await db.delete(
-      'expenses',
+      DatabaseSchema.expensesTable,
       where: 'id = ?',
       whereArgs: [id],
     );
@@ -145,7 +106,7 @@ class DatabaseHelper {
   Future<int> insertIncome(Income income) async {
     final db = await database;
     return await db.insert(
-      'incomes',
+      DatabaseSchema.incomesTable,
       income.toMap(),
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
@@ -153,7 +114,7 @@ class DatabaseHelper {
   
   Future<List<Income>> getIncomes() async {
     final db = await database;
-    final List<Map<String, dynamic>> maps = await db.query('incomes');
+    final List<Map<String, dynamic>> maps = await db.query(DatabaseSchema.incomesTable);
     
     return List.generate(maps.length, (i) {
       return Income.fromMap(maps[i]);
@@ -162,10 +123,8 @@ class DatabaseHelper {
   
   Future<List<Income>> getFixedIncomes() async {
     final db = await database;
-    final List<Map<String, dynamic>> maps = await db.query(
-      'incomes',
-      where: 'receiveDay > 0',
-      orderBy: 'receiveDay ASC',
+    final List<Map<String, dynamic>> maps = await db.rawQuery(
+      DatabaseSchema.getFixedIncomesQuery
     );
     
     return List.generate(maps.length, (i) {
@@ -176,7 +135,7 @@ class DatabaseHelper {
   Future<int> updateIncome(Income income) async {
     final db = await database;
     return await db.update(
-      'incomes',
+      DatabaseSchema.incomesTable,
       income.toMap(),
       where: 'id = ?',
       whereArgs: [income.id],
@@ -186,7 +145,7 @@ class DatabaseHelper {
   Future<int> deleteIncome(int id) async {
     final db = await database;
     return await db.delete(
-      'incomes',
+      DatabaseSchema.incomesTable,
       where: 'id = ?',
       whereArgs: [id],
     );
@@ -196,7 +155,7 @@ class DatabaseHelper {
   Future<int> insertFinanceData(FinanceData financeData) async {
     final db = await database;
     return await db.insert(
-      'finance_data',
+      DatabaseSchema.financeDataTable,
       financeData.toMap(),
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
@@ -207,11 +166,9 @@ class DatabaseHelper {
     final now = DateTime.now();
     final monthStr = '${now.year}-${now.month.toString().padLeft(2, '0')}';
     
-    final List<Map<String, dynamic>> maps = await db.query(
-      'finance_data',
-      where: 'month LIKE ?',
-      whereArgs: ['$monthStr%'],
-      limit: 1,
+    final List<Map<String, dynamic>> maps = await db.rawQuery(
+      DatabaseSchema.getCurrentMonthFinancesQuery,
+      ['$monthStr%']
     );
     
     if (maps.isNotEmpty) {
@@ -224,7 +181,7 @@ class DatabaseHelper {
   Future<int> updateFinanceData(FinanceData financeData) async {
     final db = await database;
     return await db.update(
-      'finance_data',
+      DatabaseSchema.financeDataTable,
       financeData.toMap(),
       where: 'id = ?',
       whereArgs: [financeData.id],
@@ -237,7 +194,7 @@ class DatabaseHelper {
     
     // Check if data already exists
     final expenseCount = Sqflite.firstIntValue(
-      await db.rawQuery('SELECT COUNT(*) FROM expenses')
+      await db.rawQuery(DatabaseSchema.countExpensesQuery)
     );
     
     if (expenseCount == 0) {
