@@ -8,8 +8,6 @@ class Expense {
   final Color iconBackgroundColor;
   final String category;
   final DateTime date;
-  final int dueDay;
-  bool paid;
 
   Expense({
     this.id,
@@ -19,8 +17,6 @@ class Expense {
     required this.iconBackgroundColor,
     required this.category,
     required this.date,
-    this.dueDay = 0,
-    this.paid = false,
   });
 
   // Convert Expense object to a Map for SQLite
@@ -33,8 +29,6 @@ class Expense {
       'iconColorValue': iconBackgroundColor.value,
       'category': category,
       'date': date.toIso8601String(),
-      'dueDay': dueDay,
-      'paid': paid ? 1 : 0,
     };
   }
 
@@ -48,8 +42,6 @@ class Expense {
       iconBackgroundColor: Color(map['iconColorValue']),
       category: map['category'],
       date: DateTime.parse(map['date']),
-      dueDay: map['dueDay'] ?? 0,
-      paid: map['paid'] == 1,
     );
   }
   
@@ -95,8 +87,6 @@ class Expense {
     Color? iconBackgroundColor,
     String? category,
     DateTime? date,
-    int? dueDay,
-    bool? paid,
   }) {
     return Expense(
       id: id ?? this.id,
@@ -106,12 +96,11 @@ class Expense {
       iconBackgroundColor: iconBackgroundColor ?? this.iconBackgroundColor,
       category: category ?? this.category,
       date: date ?? this.date,
-      dueDay: dueDay ?? this.dueDay,
-      paid: paid ?? this.paid,
     );
   }
 }
 
+// Keeping the Income class in the same file as it was originally
 class Income {
   final int? id; // ID for database (nullable for new records)
   final String name;

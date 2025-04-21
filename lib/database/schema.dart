@@ -2,11 +2,12 @@
 class DatabaseSchema {
   // Table names as constants
   static const String expensesTable = 'expenses';
+  static const String fixedExpensesTable = 'fixed_expenses';
   static const String incomesTable = 'incomes';
   static const String financeDataTable = 'finance_data';
   
   // Schema version
-  static const int schemaVersion = 1;
+  static const int schemaVersion = 2; // Incremented version due to schema change
   
   // Create tables SQL statements
   static const String createExpensesTable = '''
@@ -17,6 +18,17 @@ class DatabaseSchema {
       iconName TEXT NOT NULL,
       iconColorValue INTEGER NOT NULL,
       category TEXT NOT NULL,
+      date TEXT NOT NULL
+    )
+  ''';
+  
+  static const String createFixedExpensesTable = '''
+    CREATE TABLE $fixedExpensesTable(
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      bill TEXT NOT NULL,
+      amount REAL NOT NULL,
+      iconName TEXT NOT NULL,
+      iconColorValue INTEGER NOT NULL,
       date TEXT NOT NULL,
       dueDay INTEGER,
       paid INTEGER NOT NULL
@@ -50,6 +62,7 @@ class DatabaseSchema {
   // List of all creation scripts for easier database initialization
   static final List<String> createTableStatements = [
     createExpensesTable,
+    createFixedExpensesTable,
     createIncomesTable,
     createFinanceDataTable,
   ];
@@ -61,8 +74,7 @@ class DatabaseSchema {
   ''';
   
   static const String getFixedExpensesQuery = '''
-    SELECT * FROM $expensesTable
-    WHERE dueDay > 0
+    SELECT * FROM $fixedExpensesTable
     ORDER BY dueDay ASC
   ''';
   
@@ -81,5 +93,9 @@ class DatabaseSchema {
   // Query to check if data exists
   static const String countExpensesQuery = '''
     SELECT COUNT(*) FROM $expensesTable
+  ''';
+  
+  static const String countFixedExpensesQuery = '''
+    SELECT COUNT(*) FROM $fixedExpensesTable
   ''';
 }

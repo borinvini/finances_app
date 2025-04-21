@@ -4,6 +4,10 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../providers/finance_provider.dart';
 import '../models/expense.dart';
+import '../models/fixed_expense.dart';
+
+// Define transaction type enum outside the class to avoid scope issues
+enum TransactionType { regularExpense, fixedExpense, income }
 
 class AddTransactionScreen extends StatefulWidget {
   const AddTransactionScreen({super.key});
@@ -16,8 +20,9 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   final _formKey = GlobalKey<FormState>();
   
   // Form fields
-  bool _isExpense = true; // true = expense, false = income
+  TransactionType _transactionType = TransactionType.regularExpense;
   String _name = '';
+  String _bill = '';
   double _amount = 0.0;
   String _category = 'Outros';
   DateTime _date = DateTime.now();
@@ -56,7 +61,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   void initState() {
     super.initState();
     // Set default category
-    _category = _isExpense ? _expenseCategories[0] : _incomeCategories[0];
+    _category = _transactionType == TransactionType.income ? _incomeCategories[0] : _expenseCategories[0];
   }
 
   void _submitForm() {
@@ -65,30 +70,45 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
       
       final provider = Provider.of<FinanceProvider>(context, listen: false);
       
-      if (_isExpense) {
-        final expense = Expense(
-          name: _name,
-          amount: _amount,
-          icon: _selectedIcon,
-          iconBackgroundColor: _selectedColor,
-          category: _category,
-          date: _date,
-          dueDay: _recurringDay,
-        );
+      switch (_transactionType) {
+        case TransactionType.regularExpense:
+          final expense = Expense(
+            name: _name,
+            amount: _amount,
+            icon: _selectedIcon,
+            iconBackgroundColor: _selectedColor,
+            category: _category,
+            date: _date,
+          );
+          provider.addExpense(expense);
+          break;
         
-        provider.addExpense(expense);
-      } else {
-        final income = Income(
-          name: _name,
-          amount: _amount,
-          icon: _selectedIcon,
-          iconBackgroundColor: _selectedColor,
-          category: _category,
-          date: _date,
-          receiveDay: _recurringDay,
-        );
+        case TransactionType.fixedExpense:
+          final fixedExpense = FixedExpense(
+            bill: _bill,
+            amount: _amount,
+            icon: _selectedIcon,
+            iconBackgroundColor: _selectedColor,
+            date: _date,
+            dueDay: _recurringDay > 0 ? _recurringDay : _date.day,
+            paid: false,
+          );
+          provider.addFixedExpense(fixedExpense);
+          break;
         
-        provider.addIncome(income);
+        case TransactionType.income:
+          final income = Income(
+            name: _name,
+            amount: _amount,
+            icon: _selectedIcon,
+            iconBackgroundColor: _selectedColor,
+            category: _category,
+            date: _date,
+            receiveDay: _recurringDay > 0 ? _recurringDay : 0,
+            received: false,
+          );
+          provider.addIncome(income);
+          break;
       }
       
       // Return to previous screen
@@ -98,10 +118,23 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
 
   @override
   Widget build(BuildContext context) {
+    String screenTitle;
+    switch (_transactionType) {
+      case TransactionType.regularExpense:
+        screenTitle = 'Nova Despesa Regular';
+        break;
+      case TransactionType.fixedExpense:
+        screenTitle = 'Nova Despesa Fixa';
+        break;
+      case TransactionType.income:
+        screenTitle = 'Nova Receita';
+        break;
+    }
+    
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          _isExpense ? 'Nova Despesa' : 'Nova Receita',
+          screenTitle,
           style: const TextStyle(fontSize: 18),
         ),
       ),
@@ -112,81 +145,144 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Switch between expense and income
+              // Transaction type selector
               Card(
                 margin: const EdgeInsets.only(bottom: 16),
                 child: Padding(
                   padding: const EdgeInsets.all(8.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  child: Column(
                     children: [
-                      Expanded(
-                        child: TextButton(
-                          onPressed: () {
-                            setState(() {
-                              _isExpense = true;
-                              _category = _expenseCategories[0];
-                            });
-                          },
-                          style: TextButton.styleFrom(
-                            backgroundColor: _isExpense 
-                                ? Colors.red.withOpacity(0.2) 
-                                : Colors.transparent,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                          child: const Text(
-                            'Despesa',
-                            style: TextStyle(color: Colors.white),
-                          ),
+                      const Text(
+                        'Tipo de Transação',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: TextButton(
-                          onPressed: () {
-                            setState(() {
-                              _isExpense = false;
-                              _category = _incomeCategories[0];
-                            });
-                          },
-                          style: TextButton.styleFrom(
-                            backgroundColor: !_isExpense 
-                                ? Colors.green.withOpacity(0.2) 
-                                : Colors.transparent,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
+                      const SizedBox(height: 8),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          Expanded(
+                            child: TextButton(
+                              onPressed: () {
+                                setState(() {
+                                  _transactionType = TransactionType.regularExpense;
+                                  _category = _expenseCategories[0];
+                                });
+                              },
+                              style: TextButton.styleFrom(
+                                backgroundColor: _transactionType == TransactionType.regularExpense 
+                                    ? Colors.red.withOpacity(0.2) 
+                                    : Colors.transparent,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              ),
+                              child: const Text(
+                                'Despesa Regular',
+                                style: TextStyle(color: Colors.white, fontSize: 13),
+                              ),
                             ),
                           ),
-                          child: const Text(
-                            'Receita',
-                            style: TextStyle(color: Colors.white),
+                          const SizedBox(width: 4),
+                          Expanded(
+                            child: TextButton(
+                              onPressed: () {
+                                setState(() {
+                                  _transactionType = TransactionType.fixedExpense;
+                                  _recurringDay = _date.day; // Default to current day
+                                });
+                              },
+                              style: TextButton.styleFrom(
+                                backgroundColor: _transactionType == TransactionType.fixedExpense 
+                                    ? Colors.amber.withOpacity(0.2) 
+                                    : Colors.transparent,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              ),
+                              child: const Text(
+                                'Despesa Fixa',
+                                style: TextStyle(color: Colors.white, fontSize: 13),
+                              ),
+                            ),
                           ),
-                        ),
+                          const SizedBox(width: 4),
+                          Expanded(
+                            child: TextButton(
+                              onPressed: () {
+                                setState(() {
+                                  _transactionType = TransactionType.income;
+                                  _category = _incomeCategories[0];
+                                });
+                              },
+                              style: TextButton.styleFrom(
+                                backgroundColor: _transactionType == TransactionType.income 
+                                    ? Colors.green.withOpacity(0.2) 
+                                    : Colors.transparent,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              ),
+                              child: const Text(
+                                'Receita',
+                                style: TextStyle(color: Colors.white, fontSize: 13),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
                 ),
               ),
               
-              // Name field
-              TextFormField(
-                decoration: const InputDecoration(
-                  labelText: 'Nome',
-                  border: OutlineInputBorder(),
+              // Name field for regular expenses and income
+              if (_transactionType != TransactionType.fixedExpense)
+                Column(
+                  children: [
+                    TextFormField(
+                      decoration: const InputDecoration(
+                        labelText: 'Nome',
+                        border: OutlineInputBorder(),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Por favor, insira um nome';
+                        }
+                        return null;
+                      },
+                      onSaved: (value) {
+                        _name = value!;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                  ],
                 ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Por favor, insira um nome';
-                  }
-                  return null;
-                },
-                onSaved: (value) {
-                  _name = value!;
-                },
-              ),
-              const SizedBox(height: 16),
+              
+              // Bill field for fixed expenses
+              if (_transactionType == TransactionType.fixedExpense)
+                Column(
+                  children: [
+                    TextFormField(
+                      decoration: const InputDecoration(
+                        labelText: 'Conta',
+                        border: OutlineInputBorder(),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Por favor, insira um nome para a conta';
+                        }
+                        return null;
+                      },
+                      onSaved: (value) {
+                        _bill = value!;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                ),
               
               // Amount field
               TextFormField(
@@ -195,7 +291,11 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                   border: const OutlineInputBorder(),
                   prefixIcon: Icon(
                     Icons.euro,
-                    color: _isExpense ? Colors.red : Colors.green,
+                    color: _transactionType == TransactionType.income 
+                        ? Colors.green 
+                        : (_transactionType == TransactionType.regularExpense 
+                            ? Colors.red 
+                            : Colors.amber),
                   ),
                 ),
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
@@ -219,32 +319,37 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
               ),
               const SizedBox(height: 16),
               
-              // Category dropdown
-              DropdownButtonFormField<String>(
-                decoration: const InputDecoration(
-                  labelText: 'Categoria',
-                  border: OutlineInputBorder(),
+              // Category dropdown for regular expenses and income
+              if (_transactionType != TransactionType.fixedExpense)
+                Column(
+                  children: [
+                    DropdownButtonFormField<String>(
+                      decoration: const InputDecoration(
+                        labelText: 'Categoria',
+                        border: OutlineInputBorder(),
+                      ),
+                      value: _category,
+                      items: (_transactionType == TransactionType.income ? _incomeCategories : _expenseCategories)
+                          .map((category) => DropdownMenuItem(
+                                value: category,
+                                child: Text(category),
+                              ))
+                          .toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          _category = value!;
+                        });
+                      },
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Por favor, selecione uma categoria';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                  ],
                 ),
-                value: _category,
-                items: (_isExpense ? _expenseCategories : _incomeCategories)
-                    .map((category) => DropdownMenuItem(
-                          value: category,
-                          child: Text(category),
-                        ))
-                    .toList(),
-                onChanged: (value) {
-                  setState(() {
-                    _category = value!;
-                  });
-                },
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Por favor, selecione uma categoria';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
               
               // Date picker
               InkWell(
@@ -258,6 +363,11 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                   if (picked != null) {
                     setState(() {
                       _date = picked;
+                      // Update recurring day if this is a fixed expense or income
+                      if (_transactionType == TransactionType.fixedExpense ||
+                          (_transactionType == TransactionType.income && _recurringDay > 0)) {
+                        _recurringDay = picked.day;
+                      }
                     });
                   }
                 },
@@ -277,24 +387,63 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
               ),
               const SizedBox(height: 16),
               
-              // Recurring transaction
-              SwitchListTile(
-                title: Text(
-                  _isExpense ? 'Despesa Recorrente?' : 'Receita Recorrente?',
-                  style: const TextStyle(fontSize: 16),
+              // Due day for fixed expense (always show as it's required)
+              if (_transactionType == TransactionType.fixedExpense)
+                Column(
+                  children: [
+                    TextFormField(
+                      decoration: const InputDecoration(
+                        labelText: 'Dia de Vencimento',
+                        border: OutlineInputBorder(),
+                        helperText: 'Dia do mês em que a conta vence',
+                      ),
+                      keyboardType: TextInputType.number,
+                      initialValue: _recurringDay.toString(),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Por favor, insira o dia de vencimento';
+                        }
+                        try {
+                          final day = int.parse(value);
+                          if (day < 1 || day > 31) {
+                            return 'Dia deve estar entre 1 e 31';
+                          }
+                        } catch (e) {
+                          return 'Por favor, insira um número válido';
+                        }
+                        return null;
+                      },
+                      onSaved: (value) {
+                        _recurringDay = int.parse(value!);
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                  ],
                 ),
-                value: _recurringDay > 0,
-                onChanged: (value) {
-                  setState(() {
-                    _recurringDay = value ? _date.day : 0;
-                  });
-                },
-                subtitle: Text(_recurringDay > 0 
-                  ? 'Repetir todo dia ${_recurringDay.toString().padLeft(2, '0')} do mês'
-                  : 'Transação única'
+              
+              // Recurring transaction for income
+              if (_transactionType == TransactionType.income)
+                Column(
+                  children: [
+                    SwitchListTile(
+                      title: const Text(
+                        'Receita Recorrente?',
+                        style: TextStyle(fontSize: 16),
+                      ),
+                      value: _recurringDay > 0,
+                      onChanged: (value) {
+                        setState(() {
+                          _recurringDay = value ? _date.day : 0;
+                        });
+                      },
+                      subtitle: Text(_recurringDay > 0 
+                        ? 'Repetir todo dia ${_recurringDay.toString().padLeft(2, '0')} do mês'
+                        : 'Transação única'
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
                 ),
-              ),
-              const SizedBox(height: 16),
               
               // Icon and color pickers
               const Text(
@@ -397,14 +546,22 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                   onPressed: _submitForm,
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16),
-                    backgroundColor: _isExpense ? Colors.red : Colors.green,
+                    backgroundColor: _transactionType == TransactionType.income 
+                        ? Colors.green 
+                        : (_transactionType == TransactionType.regularExpense 
+                            ? Colors.red 
+                            : Colors.amber),
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
                   child: Text(
-                    _isExpense ? 'Adicionar Despesa' : 'Adicionar Receita',
+                    _transactionType == TransactionType.income 
+                        ? 'Adicionar Receita' 
+                        : (_transactionType == TransactionType.regularExpense 
+                            ? 'Adicionar Despesa Regular' 
+                            : 'Adicionar Despesa Fixa'),
                     style: const TextStyle(fontSize: 16),
                   ),
                 ),

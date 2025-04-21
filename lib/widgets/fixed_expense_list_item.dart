@@ -1,36 +1,18 @@
 import 'package:flutter/material.dart';
-import '../models/expense.dart';
 import '../models/fixed_expense.dart';
 
-class CompactExpenseListItem extends StatelessWidget {
-  final dynamic expense; // Can be either Expense or FixedExpense
-  final bool showDueDate;
-  final Function(bool?)? onPaidChanged; // Callback for paid status changes
+class FixedExpenseListItem extends StatelessWidget {
+  final FixedExpense fixedExpense;
+  final Function(bool?)? onPaidChanged;
 
-  const CompactExpenseListItem({
+  const FixedExpenseListItem({
     super.key,
-    required this.expense,
-    this.showDueDate = false,
+    required this.fixedExpense,
     this.onPaidChanged,
   });
 
-  // Check if expense is a FixedExpense
-  bool get isFixedExpense => expense is FixedExpense;
-
   @override
   Widget build(BuildContext context) {
-    final String title = isFixedExpense ? (expense as FixedExpense).bill : (expense as Expense).name;
-    final IconData icon = expense.icon;
-    final Color iconBgColor = expense.iconBackgroundColor;
-    final double amount = expense.amount;
-    
-    // Properties only available for FixedExpense
-    final bool isPaid = isFixedExpense ? (expense as FixedExpense).paid : false;
-    final int dueDay = isFixedExpense ? (expense as FixedExpense).dueDay : 0;
-    
-    // For regular expenses, we show the category
-    final String category = isFixedExpense ? '' : (expense as Expense).category;
-    
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 3.0),
       child: Container(
@@ -41,10 +23,10 @@ class CompactExpenseListItem extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 6.0),
         child: Row(
           children: [
-            // Checkbox for paid status (only for fixed expenses)
-            if (isFixedExpense && onPaidChanged != null)
+            // Checkbox for paid status
+            if (onPaidChanged != null)
               Checkbox(
-                value: isPaid,
+                value: fixedExpense.paid,
                 onChanged: onPaidChanged,
                 activeColor: Colors.blue,
                 checkColor: Colors.white,
@@ -55,11 +37,11 @@ class CompactExpenseListItem extends StatelessWidget {
               width: 32,
               height: 32,
               decoration: BoxDecoration(
-                color: iconBgColor,
+                color: fixedExpense.iconBackgroundColor,
                 borderRadius: BorderRadius.circular(6),
               ),
               child: Icon(
-                icon,
+                fixedExpense.icon,
                 color: Colors.white,
                 size: 18,
               ),
@@ -72,20 +54,16 @@ class CompactExpenseListItem extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    title,
+                    fixedExpense.bill,
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      color: isFixedExpense && isPaid ? Colors.grey : Colors.white,
+                      color: fixedExpense.paid ? Colors.grey : Colors.white,
                       fontSize: 13,
-                      decoration: isFixedExpense && isPaid ? TextDecoration.lineThrough : null,
+                      decoration: fixedExpense.paid ? TextDecoration.lineThrough : null,
                     ),
                   ),
                   Text(
-                    showDueDate && isFixedExpense
-                      ? 'Vencimento dia $dueDay'
-                      : category.isNotEmpty 
-                        ? '$category • ${expense.date.day.toString().padLeft(2, '0')} Abr'
-                        : '${expense.date.day.toString().padLeft(2, '0')} Abr',
+                    'Vencimento dia ${fixedExpense.dueDay}',
                     style: TextStyle(
                       color: Colors.grey[400],
                       fontSize: 11,
@@ -96,12 +74,12 @@ class CompactExpenseListItem extends StatelessWidget {
             ),
             // Trailing amount
             Text(
-              '€ ${amount.toStringAsFixed(2)}',
+              '€ ${fixedExpense.amount.toStringAsFixed(2)}',
               style: TextStyle(
                 fontWeight: FontWeight.bold,
-                color: isFixedExpense && isPaid ? Colors.grey : Colors.white,
+                color: fixedExpense.paid ? Colors.grey : Colors.white,
                 fontSize: 13,
-                decoration: isFixedExpense && isPaid ? TextDecoration.lineThrough : null,
+                decoration: fixedExpense.paid ? TextDecoration.lineThrough : null,
               ),
             ),
           ],

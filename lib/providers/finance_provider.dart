@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../services/database_helper.dart';
 import '../models/expense.dart';
+import '../models/fixed_expense.dart';
 import '../models/finance_data.dart';
 
 class FinanceProvider with ChangeNotifier {
@@ -10,13 +11,13 @@ class FinanceProvider with ChangeNotifier {
   // State data
   FinanceData? _currentFinanceData;
   List<Expense> _recentExpenses = [];
-  List<Expense> _fixedExpenses = [];
+  List<FixedExpense> _fixedExpenses = [];
   List<Income> _fixedIncomes = [];
   
   // Getters
   FinanceData get currentFinanceData => _currentFinanceData ?? getCurrentFinances();
   List<Expense> get recentExpenses => _recentExpenses;
-  List<Expense> get fixedExpenses => _fixedExpenses;
+  List<FixedExpense> get fixedExpenses => _fixedExpenses;
   List<Income> get fixedIncomes => _fixedIncomes;
   
   // Total fixed budget calculation
@@ -42,7 +43,7 @@ class FinanceProvider with ChangeNotifier {
     // Load recent expenses
     _recentExpenses = await _dbHelper.getRecentExpenses();
     
-    // Load fixed expenses (with due day)
+    // Load fixed expenses
     _fixedExpenses = await _dbHelper.getFixedExpenses();
     
     // Load fixed incomes
@@ -55,11 +56,7 @@ class FinanceProvider with ChangeNotifier {
   Future<void> addExpense(Expense expense) async {
     await _dbHelper.insertExpense(expense);
     
-    // Reload data based on type
-    if (expense.dueDay > 0) {
-      _fixedExpenses = await _dbHelper.getFixedExpenses();
-    }
-    
+    // Reload recent expenses
     _recentExpenses = await _dbHelper.getRecentExpenses();
     
     // Update totals in finance data
@@ -72,11 +69,7 @@ class FinanceProvider with ChangeNotifier {
   Future<void> updateExpense(Expense expense) async {
     await _dbHelper.updateExpense(expense);
     
-    // Reload data based on type
-    if (expense.dueDay > 0) {
-      _fixedExpenses = await _dbHelper.getFixedExpenses();
-    }
-    
+    // Reload expenses
     _recentExpenses = await _dbHelper.getRecentExpenses();
     
     // Update totals in finance data
@@ -89,9 +82,47 @@ class FinanceProvider with ChangeNotifier {
   Future<void> deleteExpense(int id) async {
     await _dbHelper.deleteExpense(id);
     
-    // Reload all expenses since we don't know the type
-    _fixedExpenses = await _dbHelper.getFixedExpenses();
+    // Reload expenses
     _recentExpenses = await _dbHelper.getRecentExpenses();
+    
+    // Update totals in finance data
+    await _updateFinanceSummary();
+    
+    notifyListeners();
+  }
+  
+  // Add a new fixed expense
+  Future<void> addFixedExpense(FixedExpense fixedExpense) async {
+    await _dbHelper.insertFixedExpense(fixedExpense);
+    
+    // Reload fixed expenses
+    _fixedExpenses = await _dbHelper.getFixedExpenses();
+    
+    // Update totals in finance data
+    await _updateFinanceSummary();
+    
+    notifyListeners();
+  }
+  
+  // Update a fixed expense
+  Future<void> updateFixedExpense(FixedExpense fixedExpense) async {
+    await _dbHelper.updateFixedExpense(fixedExpense);
+    
+    // Reload fixed expenses
+    _fixedExpenses = await _dbHelper.getFixedExpenses();
+    
+    // Update totals in finance data
+    await _updateFinanceSummary();
+    
+    notifyListeners();
+  }
+  
+  // Delete a fixed expense
+  Future<void> deleteFixedExpense(int id) async {
+    await _dbHelper.deleteFixedExpense(id);
+    
+    // Reload fixed expenses
+    _fixedExpenses = await _dbHelper.getFixedExpenses();
     
     // Update totals in finance data
     await _updateFinanceSummary();
@@ -138,10 +169,10 @@ class FinanceProvider with ChangeNotifier {
     notifyListeners();
   }
   
-  // Toggle expense paid status
-  Future<void> toggleExpensePaid(Expense expense) async {
-    Expense updatedExpense = expense.copyWith(paid: !expense.paid);
-    await updateExpense(updatedExpense);
+  // Toggle fixed expense paid status
+  Future<void> toggleExpensePaid(FixedExpense fixedExpense) async {
+    FixedExpense updatedExpense = fixedExpense.copyWith(paid: !fixedExpense.paid);
+    await updateFixedExpense(updatedExpense);
   }
   
   // Toggle income received status
@@ -154,10 +185,14 @@ class FinanceProvider with ChangeNotifier {
   Future<void> _updateFinanceSummary() async {
     // Get all expenses and incomes
     final allExpenses = await _dbHelper.getExpenses();
+    final allFixedExpenses = await _dbHelper.getFixedExpenses();
     final allIncomes = await _dbHelper.getIncomes();
     
     // Calculate totals
-    final totalExpenses = allExpenses.fold(0.0, (sum, expense) => sum + expense.amount);
+    final totalRegularExpenses = allExpenses.fold(0.0, (sum, expense) => sum + expense.amount);
+    final totalFixedExpenses = allFixedExpenses.fold(0.0, (sum, expense) => sum + expense.amount);
+    final totalExpenses = totalRegularExpenses + totalFixedExpenses;
+    
     final totalIncome = allIncomes.fold(0.0, (sum, income) => sum + income.amount);
     final balance = totalIncome - totalExpenses;
     

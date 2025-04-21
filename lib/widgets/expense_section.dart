@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import '../models/expense.dart';
-// Import the new component
+
+// Import the updated component
 import 'compact_expense_list_item.dart';
 
 class ExpenseSection extends StatelessWidget {
   final String title;
-  final List<Expense> expenses;
+  final List<dynamic> expenses; // Can contain Expense or FixedExpense objects
   final bool showDueDate;
   final bool showTotal;
   final String? actionText;
@@ -55,7 +55,7 @@ class ExpenseSection extends StatelessWidget {
             ],
           ),
         ),
-        // Use CompactExpenseListItem instead of ExpenseListItem
+        // Use CompactExpenseListItem for any expense type
         ...expenses.map((expense) => CompactExpenseListItem(
               expense: expense,
               showDueDate: showDueDate,

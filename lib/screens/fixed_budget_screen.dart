@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/finance_provider.dart';
-import '../widgets/compact_expense_list_item.dart';
+import '../widgets/fixed_expense_list_item.dart';
 import '../widgets/income_list_item.dart';
 
 class FixedBudgetScreen extends StatefulWidget {
@@ -25,7 +25,7 @@ class _FixedBudgetScreenState extends State<FixedBudgetScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Cabeçalho da tela
+              // Screen header
               const Padding(
                 padding: EdgeInsets.fromLTRB(12.0, 12.0, 12.0, 4.0),
                 child: Text(
@@ -38,7 +38,7 @@ class _FixedBudgetScreenState extends State<FixedBudgetScreen> {
                 ),
               ),
               
-              // Descrição da seção
+              // Section description
               Padding(
                 padding: const EdgeInsets.fromLTRB(12.0, 0, 12.0, 12.0),
                 child: Text(
@@ -50,7 +50,7 @@ class _FixedBudgetScreenState extends State<FixedBudgetScreen> {
                 ),
               ),
               
-              // Seção de Receitas
+              // Income section
               const Padding(
                 padding: EdgeInsets.fromLTRB(12.0, 8.0, 12.0, 4.0),
                 child: Text(
@@ -63,7 +63,7 @@ class _FixedBudgetScreenState extends State<FixedBudgetScreen> {
                 ),
               ),
               
-              // Lista de receitas
+              // Income list
               ...provider.fixedIncomes.map((income) => IncomeListItem(
                 income: income,
                 onReceivedChanged: (value) {
@@ -71,7 +71,7 @@ class _FixedBudgetScreenState extends State<FixedBudgetScreen> {
                 },
               )).toList(),
               
-              // Total de receitas
+              // Total income
               Padding(
                 padding: const EdgeInsets.fromLTRB(12.0, 8.0, 12.0, 16.0),
                 child: Container(
@@ -105,7 +105,7 @@ class _FixedBudgetScreenState extends State<FixedBudgetScreen> {
                 ),
               ),
               
-              // Seção de Despesas
+              // Fixed expense section
               const Padding(
                 padding: EdgeInsets.fromLTRB(12.0, 8.0, 12.0, 4.0),
                 child: Text(
@@ -118,16 +118,15 @@ class _FixedBudgetScreenState extends State<FixedBudgetScreen> {
                 ),
               ),
               
-              // Lista de despesas com checkboxes para marcar como pagas
-              ...provider.fixedExpenses.map((expense) => CompactExpenseListItem(
-                expense: expense,
-                showDueDate: true,
+              // Fixed expense list with checkboxes
+              ...provider.fixedExpenses.map((fixedExpense) => FixedExpenseListItem(
+                fixedExpense: fixedExpense,
                 onPaidChanged: (value) {
-                  provider.toggleExpensePaid(expense);
+                  provider.toggleExpensePaid(fixedExpense);
                 },
               )).toList(),
               
-              // Total de despesas
+              // Total expenses
               Padding(
                 padding: const EdgeInsets.fromLTRB(12.0, 8.0, 12.0, 16.0),
                 child: Container(
@@ -161,7 +160,7 @@ class _FixedBudgetScreenState extends State<FixedBudgetScreen> {
                 ),
               ),
               
-              // Saldo (diferença entre receitas e despesas)
+              // Balance (difference between income and expenses)
               Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Container(
@@ -195,7 +194,7 @@ class _FixedBudgetScreenState extends State<FixedBudgetScreen> {
                 ),
               ),
               
-              // Espaço adicional na parte inferior
+              // Extra space at the bottom
               const SizedBox(height: 80),
             ],
           ),
