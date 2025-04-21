@@ -33,7 +33,7 @@ class _FixedBudgetScreenState extends State<FixedBudgetScreen> {
           const Padding(
             padding: EdgeInsets.fromLTRB(12.0, 12.0, 12.0, 4.0),
             child: Text(
-              'Orçamento Fixo - Abril 2025',
+              'Orçamento Fixo',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,

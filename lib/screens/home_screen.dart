@@ -26,7 +26,7 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         toolbarHeight: 56,
         title: const Text(
-          'Minhas Finanças',
+          'Abril 2025',
           style: TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,
@@ -108,17 +108,6 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0),
-            child: Text(
-              'Abril 2025',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
-          ),
           SummaryCard(financeData: currentFinances),
           const SizedBox(height: 12),
           
@@ -168,7 +157,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Text(
-                    'Total Orçamento Fixo',
+                    'Total',
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
