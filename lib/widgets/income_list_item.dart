@@ -3,12 +3,12 @@ import '../models/expense.dart';
 
 class IncomeListItem extends StatelessWidget {
   final Income income;
-  final Function(bool?) onReceivedChanged;
+  final Function(bool?)? onReceivedChanged;
 
   const IncomeListItem({
     super.key,
     required this.income,
-    required this.onReceivedChanged,
+    this.onReceivedChanged,
   });
 
   @override
@@ -23,15 +23,7 @@ class IncomeListItem extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 6.0),
         child: Row(
           children: [
-            // Checkbox for received status
-            Checkbox(
-              value: income.received,
-              onChanged: onReceivedChanged,
-              activeColor: Colors.green,
-              checkColor: Colors.white,
-              side: const BorderSide(color: Colors.grey, width: 1.5),
-            ),
-            // Leading icon
+            // Leading icon - no checkbox here anymore
             Container(
               width: 32,
               height: 32,
