@@ -6,6 +6,7 @@ import '../widgets/summary_card.dart';
 import '../widgets/expense_section.dart';
 import 'fixed_budget_screen.dart';
 import 'add_transaction_screen.dart';
+import 'settings_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -53,7 +54,12 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           IconButton(
             icon: const Icon(Icons.settings, color: Colors.white, size: 20),
-            onPressed: () {},
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const SettingsScreen()),
+              );
+            },
             padding: const EdgeInsets.symmetric(horizontal: 12),
           ),
         ],

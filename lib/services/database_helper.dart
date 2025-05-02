@@ -413,4 +413,24 @@ class DatabaseHelper {
       ),
     ];
   }
+  
+  // NEW METHOD: Reset database
+  Future<void> resetDatabase() async {
+    // Close any open database connections first
+    if (_database != null) {
+      await _database!.close();
+      _database = null;
+    }
+    
+    // Get the database path and delete the file
+    String path = join(await getDatabasesPath(), 'finances.db');
+    if (await databaseExists(path)) {
+      await deleteDatabase(path);
+      print('Database deleted successfully');
+    }
+    
+    // Reinitialize the database with sample data
+    _database = await _initDatabase();
+    await insertSampleData();
+  }
 }

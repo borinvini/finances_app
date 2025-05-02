@@ -223,4 +223,11 @@ class FinanceProvider with ChangeNotifier {
       _currentFinanceData = newData.copyWith(id: id);
     }
   }
+  
+  // NEW METHOD: Reset database and reload data
+  Future<void> resetDatabaseAndReload() async {
+    await _dbHelper.resetDatabase();
+    await loadAllData();
+    notifyListeners();
+  }
 }
