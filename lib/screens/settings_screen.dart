@@ -1,6 +1,8 @@
+// lib/screens/settings_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/finance_provider.dart';
+import 'category_list_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -23,6 +25,34 @@ class SettingsScreen extends StatelessWidget {
               ),
             ),
           ),
+          
+          // Categories section
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            child: Text(
+              'Categorias',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.blue,
+              ),
+            ),
+          ),
+          
+          // Manage categories option
+          ListTile(
+            title: const Text('Gerenciar Categorias'),
+            subtitle: const Text('Adicionar, editar ou remover categorias'),
+            leading: const Icon(Icons.category, color: Colors.blue),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const CategoryListScreen()),
+              );
+            },
+          ),
+          
+          const Divider(),
           
           // Database section
           const Padding(

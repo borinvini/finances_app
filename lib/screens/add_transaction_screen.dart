@@ -5,7 +5,6 @@ import 'package:intl/intl.dart';
 import '../providers/finance_provider.dart';
 import '../models/expense.dart';
 import '../models/fixed_expense.dart';
-import '../models/category.dart'; // Nova importação
 
 // Definir tipo de transação enum fora da classe para evitar problemas de escopo
 enum TransactionType { regularExpense, fixedExpense, income }

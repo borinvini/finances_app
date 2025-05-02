@@ -71,46 +71,52 @@ class DatabaseHelper {
       // Mapeamento das categorias para ícones e cores
       final categories = [
         {
-          'name': 'Moradia',
-          'iconName': 'home',
-          'iconColorValue': Colors.blue.shade700.value
+          'name': 'Casa',
+          'iconName': 'house', // Melhor do que 'home', mais específico para moradia
+          'iconColorValue': Colors.blue.shade700.value,
         },
         {
-          'name': 'Alimentação',
-          'iconName': 'fastfood',
-          'iconColorValue': Colors.orange.shade700.value
+          'name': 'Alimentação/Higiene',
+          'iconName': 'restaurant_menu', // Representa comida de forma mais clara
+          'iconColorValue': Colors.orange.shade700.value,
         },
         {
           'name': 'Transporte',
-          'iconName': 'directions_car',
-          'iconColorValue': Colors.green.shade700.value
+          'iconName': 'commute', // Ícone que representa transporte urbano
+          'iconColorValue': Colors.green.shade700.value,
         },
         {
           'name': 'Saúde',
-          'iconName': 'medication',
-          'iconColorValue': Colors.red.shade700.value
+          'iconName': 'local_hospital', // Mais reconhecível para saúde do que 'medication'
+          'iconColorValue': Colors.red.shade700.value,
         },
         {
-          'name': 'Educação',
-          'iconName': 'school',
-          'iconColorValue': Colors.purple.shade700.value
+          'name': 'Roupas',
+          'iconName': 'checkroom', // Ícone de cabide, ideal para roupas
+          'iconColorValue': Colors.purple.shade700.value,
         },
         {
           'name': 'Lazer',
-          'iconName': 'movie',
-          'iconColorValue': Colors.amber.shade700.value
+          'iconName': 'sports_esports', // Um pouco mais abrangente e moderno que 'movie'
+          'iconColorValue': Colors.amber.shade700.value,
         },
         {
           'name': 'Serviços',
-          'iconName': 'build',
-          'iconColorValue': Colors.grey.shade700.value
+          'iconName': 'handyman', // Mais completo que 'build' para serviços em geral
+          'iconColorValue': Colors.grey.shade700.value,
+        },
+        {
+          'name': 'Eletrônicos',
+          'iconName': 'devices_other', // Representa tecnologia/eletrônicos
+          'iconColorValue': Colors.indigo.shade700.value,
         },
         {
           'name': 'Outros',
-          'iconName': 'attach_money',
-          'iconColorValue': Colors.teal.shade700.value
-        }
+          'iconName': 'category', // Representa uma categoria genérica
+          'iconColorValue': Colors.teal.shade700.value,
+        },
       ];
+
       
       // Inserir cada categoria
       for (var category in categories) {
@@ -506,4 +512,33 @@ class DatabaseHelper {
     _database = await _initDatabase();
     await insertSampleData();
   }
+
+  // Get all expenses that use a specific category
+  Future<List<Expense>> getExpensesWithCategory(String categoryName) async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      DatabaseSchema.expensesTable,
+      where: 'category = ?',
+      whereArgs: [categoryName],
+    );
+    
+    return List.generate(maps.length, (i) {
+      return Expense.fromMap(maps[i]);
+    });
+  }
+
+  // Get all incomes that use a specific category
+  Future<List<Income>> getIncomesWithCategory(String categoryName) async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      DatabaseSchema.incomesTable,
+      where: 'category = ?',
+      whereArgs: [categoryName],
+    );
+    
+    return List.generate(maps.length, (i) {
+      return Income.fromMap(maps[i]);
+    });
+  }
+
 }

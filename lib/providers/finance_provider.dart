@@ -247,4 +247,64 @@ class FinanceProvider with ChangeNotifier {
     // Readicionar a despesa ao banco de dados
     await addExpense(expense);
   }
+
+  // Add a new category
+  Future<void> addCategory(Category category) async {
+    final id = await _dbHelper.insertCategory(category);
+    
+    // Add the category to the local list with the generated ID
+    final newCategory = Category(
+      id: id,
+      name: category.name,
+      icon: category.icon,
+      iconBackgroundColor: category.iconBackgroundColor,
+    );
+    
+    _categories.add(newCategory);
+    // Sort categories by name
+    _categories.sort((a, b) => a.name.compareTo(b.name));
+    
+    notifyListeners();
+  }
+
+  // Update an existing category
+  Future<void> updateCategory(Category category) async {
+    await _dbHelper.updateCategory(category);
+    
+    // Update the category in the local list
+    final index = _categories.indexWhere((c) => c.id == category.id);
+    if (index != -1) {
+      _categories[index] = category;
+      // Sort categories by name
+      _categories.sort((a, b) => a.name.compareTo(b.name));
+    }
+    
+    notifyListeners();
+  }
+
+  // Delete a category
+  Future<void> deleteCategory(int id) async {
+    await _dbHelper.deleteCategory(id);
+    
+    // Remove the category from the local list
+    _categories.removeWhere((c) => c.id == id);
+    
+    notifyListeners();
+  }
+
+  // Check if a category can be deleted (not used by any expense)
+  Future<bool> canDeleteCategory(int categoryId) async {
+    // Get the category name
+    final category = _categories.firstWhere((c) => c.id == categoryId);
+    
+    // Check if any expense uses this category
+    final expenses = await _dbHelper.getExpensesWithCategory(category.name);
+    // We also need to check incomes
+    final incomes = await _dbHelper.getIncomesWithCategory(category.name);
+    
+    // If there are no expenses or incomes using this category, it can be deleted
+    return expenses.isEmpty && incomes.isEmpty;
+  }
+
 }
+

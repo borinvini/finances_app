@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/finance_provider.dart';
 import '../models/expense.dart';
-import '../models/fixed_expense.dart';
 
 // Import the updated component
 import 'compact_expense_list_item.dart';

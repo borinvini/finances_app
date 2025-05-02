@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'providers/finance_provider.dart';
 import 'screens/home_screen.dart';
-import 'services/database_helper.dart'; // Adicionado para teste
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
