@@ -4,11 +4,17 @@ import 'package:provider/provider.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'providers/finance_provider.dart';
 import 'screens/home_screen.dart';
+import 'services/database_helper.dart'; // Adicionado para teste
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   // Inicializar formatação de data para português do Brasil
   await initializeDateFormatting('pt_BR', null);
+  
+  // Resetar o banco de dados para testar a migração e categorias
+  // ATENÇÃO: Remova ou comente esta linha após o teste!
+  // await DatabaseHelper().resetDatabase();
+  
   runApp(const MyApp());
 }
 
@@ -71,7 +77,7 @@ class _AppStartupScreenState extends State<AppStartupScreen> {
     final provider = Provider.of<FinanceProvider>(context, listen: false);
     await provider.loadAllData();
     
-    // Add a small delay to show loading screen
+    // Adicionar um pequeno atraso para mostrar a tela de carregamento
     await Future.delayed(const Duration(milliseconds: 500));
     
     setState(() {

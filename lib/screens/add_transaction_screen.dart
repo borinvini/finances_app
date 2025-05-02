@@ -5,11 +5,12 @@ import 'package:intl/intl.dart';
 import '../providers/finance_provider.dart';
 import '../models/expense.dart';
 import '../models/fixed_expense.dart';
+import '../models/category.dart'; // Nova importação
 
-// Define transaction type enum outside the class to avoid scope issues
+// Definir tipo de transação enum fora da classe para evitar problemas de escopo
 enum TransactionType { regularExpense, fixedExpense, income }
 
-// Add this enum for the source screen
+// Adicionar este enum para a tela de origem
 enum SourceScreen { home, budget }
 
 class AddTransactionScreen extends StatefulWidget {
@@ -27,7 +28,7 @@ class AddTransactionScreen extends StatefulWidget {
 class _AddTransactionScreenState extends State<AddTransactionScreen> {
   final _formKey = GlobalKey<FormState>();
   
-  // Form fields
+  // Campos do formulário
   late TransactionType _transactionType;
   String _name = '';
   String _bill = '';
@@ -35,51 +36,59 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   String _category = 'Outros';
   DateTime _date = DateTime.now();
   int _recurringDay = 0;
+  
+  // Estes não são mais selecionados pelo usuário
   IconData _selectedIcon = Icons.attach_money;
   Color _selectedColor = Colors.blue;
   
-  // Available categories
-  final List<String> _expenseCategories = [
-    'Moradia', 'Alimentação', 'Transporte', 'Saúde', 
-    'Educação', 'Lazer', 'Serviços', 'Outros'
-  ];
+  // Categorias disponíveis - serão carregadas do banco de dados 
+  List<String> _expenseCategories = [];
   
   final List<String> _incomeCategories = [
     'Salário', 'Freelance', 'Investimentos', 'Vendas', 'Outros'
-  ];
-  
-  // Available icons
-  final List<IconData> _availableIcons = [
-    Icons.home, Icons.shopping_cart, Icons.fastfood, 
-    Icons.directions_car, Icons.health_and_safety, 
-    Icons.school, Icons.movie, Icons.wifi, 
-    Icons.water_drop, Icons.bolt, Icons.phone_android,
-    Icons.work, Icons.account_balance_wallet, 
-    Icons.attach_money, Icons.medication
-  ];
-  
-  // Available colors
-  final List<Color> _availableColors = [
-    Colors.blue, Colors.red, Colors.green, 
-    Colors.amber, Colors.purple, Colors.teal,
-    Colors.orange, Colors.pink, Colors.indigo,
   ];
 
   @override
   void initState() {
     super.initState();
-    // Set default transaction type based on source screen
+    // Definir tipo de transação padrão com base na tela de origem
     if (widget.sourceScreen == SourceScreen.home) {
       _transactionType = TransactionType.regularExpense;
     } else {
       _transactionType = TransactionType.fixedExpense;
     }
-    
-    // Set default category
-    _category = _transactionType == TransactionType.income ? _incomeCategories[0] : _expenseCategories[0];
   }
 
-  void _submitForm() {
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Carregar as categorias do provider
+    _loadCategories();
+  }
+
+  // Carregar as categorias do banco de dados
+  void _loadCategories() async {
+    final provider = Provider.of<FinanceProvider>(context, listen: false);
+    
+    // Verificar se as categorias já foram carregadas
+    if (provider.categories.isEmpty) {
+      await provider.loadAllData();
+    }
+    
+    // Extrair os nomes das categorias
+    setState(() {
+      _expenseCategories = provider.categories.map((c) => c.name).toList();
+      
+      // Definir categoria padrão
+      if (_expenseCategories.isNotEmpty) {
+        _category = _transactionType == TransactionType.income
+            ? _incomeCategories[0]
+            : _expenseCategories[0];
+      }
+    });
+  }
+
+  void _submitForm() async {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
       
@@ -87,11 +96,15 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
       
       switch (_transactionType) {
         case TransactionType.regularExpense:
+          // Obter a categoria para acessar o ícone e cor
+          final categoryObj = await provider.getCategoryByName(_category);
+          
           final expense = Expense(
             name: _name,
             amount: _amount,
-            icon: _selectedIcon,
-            iconBackgroundColor: _selectedColor,
+            // Usar ícone e cor da categoria, se disponível
+            icon: categoryObj?.icon ?? Icons.attach_money,
+            iconBackgroundColor: categoryObj?.iconBackgroundColor ?? Colors.blue,
             category: _category,
             date: _date,
           );
@@ -99,6 +112,8 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
           break;
         
         case TransactionType.fixedExpense:
+          // Para despesas fixas, usamos ícones padrão, mas no futuro poderíamos
+          // igualmente associá-las a categorias
           final fixedExpense = FixedExpense(
             bill: _bill,
             amount: _amount,
@@ -126,8 +141,21 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
           break;
       }
       
-      // Return to previous screen
+      // Retornar à tela anterior
       Navigator.pop(context);
+    }
+  }
+
+  // Atualiza o ícone e a cor com base na categoria selecionada
+  void _updateIconAndColorFromCategory(String categoryName) async {
+    final provider = Provider.of<FinanceProvider>(context, listen: false);
+    final categoryObj = await provider.getCategoryByName(categoryName);
+    
+    if (categoryObj != null) {
+      setState(() {
+        _selectedIcon = categoryObj.icon;
+        _selectedColor = categoryObj.iconBackgroundColor;
+      });
     }
   }
 
@@ -160,7 +188,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Transaction type selector - only show if on budget screen
+              // Seletor de tipo de transação - mostrar apenas se estiver na tela de orçamento
               if (widget.sourceScreen == SourceScreen.budget)
                 Card(
                   margin: const EdgeInsets.only(bottom: 16),
@@ -179,13 +207,13 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
-                            // Only show fixed expense and income options for budget screen
+                            // Mostrar apenas opções de despesa fixa e receita para tela de orçamento
                             Expanded(
                               child: TextButton(
                                 onPressed: () {
                                   setState(() {
                                     _transactionType = TransactionType.fixedExpense;
-                                    _recurringDay = _date.day; // Default to current day
+                                    _recurringDay = _date.day; // Padrão para o dia atual
                                   });
                                 },
                                 style: TextButton.styleFrom(
@@ -232,7 +260,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                   ),
                 ),
               
-              // Name field for regular expenses and income
+              // Campo de nome para despesas regulares e receita
               if (_transactionType != TransactionType.fixedExpense)
                 Column(
                   children: [
@@ -255,7 +283,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                   ],
                 ),
               
-              // Bill field for fixed expenses
+              // Campo de conta para despesas fixas
               if (_transactionType == TransactionType.fixedExpense)
                 Column(
                   children: [
@@ -278,7 +306,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                   ],
                 ),
               
-              // Amount field
+              // Campo de valor
               TextFormField(
                 decoration: InputDecoration(
                   labelText: 'Valor (€)',
@@ -313,7 +341,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
               ),
               const SizedBox(height: 16),
               
-              // Category dropdown for regular expenses and income
+              // Dropdown de categoria para despesas regulares e receita
               if (_transactionType != TransactionType.fixedExpense)
                 Column(
                   children: [
@@ -330,9 +358,16 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                               ))
                           .toList(),
                       onChanged: (value) {
-                        setState(() {
-                          _category = value!;
-                        });
+                        if (value != null) {
+                          setState(() {
+                            _category = value;
+                          });
+                          
+                          // Atualizar o ícone e a cor com base na categoria
+                          if (_transactionType == TransactionType.regularExpense) {
+                            _updateIconAndColorFromCategory(value);
+                          }
+                        }
                       },
                       validator: (value) {
                         if (value == null || value.isEmpty) {
@@ -345,7 +380,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                   ],
                 ),
               
-              // Date picker
+              // Seletor de data
               InkWell(
                 onTap: () async {
                   final picked = await showDatePicker(
@@ -357,7 +392,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                   if (picked != null) {
                     setState(() {
                       _date = picked;
-                      // Update recurring day if this is a fixed expense or income
+                      // Atualizar dia recorrente se esta for uma despesa fixa ou receita
                       if (_transactionType == TransactionType.fixedExpense ||
                           (_transactionType == TransactionType.income && _recurringDay > 0)) {
                         _recurringDay = picked.day;
@@ -381,7 +416,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
               ),
               const SizedBox(height: 16),
               
-              // Due day for fixed expense (always show as it's required)
+              // Dia de vencimento para despesa fixa (sempre mostrar, pois é obrigatório)
               if (_transactionType == TransactionType.fixedExpense)
                 Column(
                   children: [
@@ -415,7 +450,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                   ],
                 ),
               
-              // Recurring transaction for income
+              // Transação recorrente para receita
               if (_transactionType == TransactionType.income)
                 Column(
                   children: [
@@ -439,101 +474,144 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                   ],
                 ),
               
-              // Icon and color pickers
-              const Text(
-                'Ícone e Cor',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
-              
-              // Icon grid
-              Container(
-                height: 100,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF1A1F2E),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: GridView.builder(
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 7,
-                    childAspectRatio: 1.0,
-                  ),
-                  itemCount: _availableIcons.length,
-                  itemBuilder: (context, index) {
-                    return IconButton(
-                      icon: Icon(
-                        _availableIcons[index],
-                        color: _selectedIcon == _availableIcons[index]
-                            ? _selectedColor
-                            : Colors.white70,
+              // Remover seletor de ícone e cor para despesas regulares
+              // Mostrar somente para receitas e despesas fixas onde não temos categorias
+              if (_transactionType != TransactionType.regularExpense)
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Ícone e Cor',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 8),
+                    
+                    // Grade de ícones
+                    Container(
+                      height: 100,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF1A1F2E),
+                        borderRadius: BorderRadius.circular(8),
                       ),
-                      onPressed: () {
-                        setState(() {
-                          _selectedIcon = _availableIcons[index];
-                        });
-                      },
-                    );
-                  },
-                ),
-              ),
-              const SizedBox(height: 16),
-              
-              // Color grid
-              Container(
-                height: 60,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF1A1F2E),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: _availableColors.length,
-                  itemBuilder: (context, index) {
-                    return Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            _selectedColor = _availableColors[index];
-                          });
+                      child: Consumer<FinanceProvider>(
+                        builder: (context, provider, _) {
+                          // Extrair os ícones de todas as categorias
+                          List<IconData> availableIcons = provider.categories
+                            .map((c) => c.icon)
+                            .toSet() // Remover duplicatas
+                            .toList();
+                          
+                          // Adicionar alguns ícones padrão
+                          availableIcons.addAll([
+                            Icons.account_balance_wallet, 
+                            Icons.work,
+                            Icons.attach_money,
+                          ]);
+                          
+                          return GridView.builder(
+                            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 7,
+                              childAspectRatio: 1.0,
+                            ),
+                            itemCount: availableIcons.length,
+                            itemBuilder: (context, index) {
+                              return IconButton(
+                                icon: Icon(
+                                  availableIcons[index],
+                                  color: _selectedIcon == availableIcons[index]
+                                      ? _selectedColor
+                                      : Colors.white70,
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    _selectedIcon = availableIcons[index];
+                                  });
+                                },
+                              );
+                            },
+                          );
                         },
-                        child: Container(
-                          width: 40,
-                          height: 40,
-                          decoration: BoxDecoration(
-                            color: _availableColors[index],
-                            shape: BoxShape.circle,
-                            border: _selectedColor == _availableColors[index]
-                                ? Border.all(color: Colors.white, width: 2)
-                                : null,
-                          ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    
+                    // Grade de cores
+                    Container(
+                      height: 60,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF1A1F2E),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Consumer<FinanceProvider>(
+                        builder: (context, provider, _) {
+                          // Extrair as cores de todas as categorias
+                          List<Color> availableColors = provider.categories
+                            .map((c) => c.iconBackgroundColor)
+                            .toSet() // Remover duplicatas
+                            .toList();
+                          
+                          // Adicionar algumas cores padrão
+                          availableColors.addAll([
+                            Colors.blue,
+                            Colors.red,
+                            Colors.green,
+                            Colors.orange,
+                            Colors.purple,
+                          ]);
+                          
+                          return ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: availableColors.length,
+                            itemBuilder: (context, index) {
+                              return Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: GestureDetector(
+                                  onTap: () {
+                                    setState(() {
+                                      _selectedColor = availableColors[index];
+                                    });
+                                  },
+                                  child: Container(
+                                    width: 40,
+                                    height: 40,
+                                    decoration: BoxDecoration(
+                                      color: availableColors[index],
+                                      shape: BoxShape.circle,
+                                      border: _selectedColor == availableColors[index]
+                                          ? Border.all(color: Colors.white, width: 2)
+                                          : null,
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                          );
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    
+                    // Visualização
+                    Center(
+                      child: Container(
+                        width: 80,
+                        height: 80,
+                        decoration: BoxDecoration(
+                          color: _selectedColor.withOpacity(0.2),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          _selectedIcon,
+                          color: _selectedColor,
+                          size: 40,
                         ),
                       ),
-                    );
-                  },
+                    ),
+                    const SizedBox(height: 24),
+                  ],
                 ),
-              ),
-              const SizedBox(height: 24),
               
-              // Preview
-              Center(
-                child: Container(
-                  width: 80,
-                  height: 80,
-                  decoration: BoxDecoration(
-                    color: _selectedColor.withOpacity(0.2),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    _selectedIcon,
-                    color: _selectedColor,
-                    size: 40,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 24),
-              
-              // Submit button
+              // Botão de envio
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(

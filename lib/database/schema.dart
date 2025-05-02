@@ -1,15 +1,16 @@
 // lib/database/schema.dart
 class DatabaseSchema {
-  // Table names as constants
+  // Nome das tabelas como constantes
   static const String expensesTable = 'expenses';
   static const String fixedExpensesTable = 'fixed_expenses';
   static const String incomesTable = 'incomes';
   static const String financeDataTable = 'finance_data';
+  static const String categoriesTable = 'categories'; // Nova tabela
   
-  // Schema version
-  static const int schemaVersion = 2; // Incremented version due to schema change
+  // Versão do esquema
+  static const int schemaVersion = 3; // Versão incrementada para a alteração do esquema
   
-  // Create tables SQL statements
+  // Declarações SQL para criar tabelas
   static const String createExpensesTable = '''
     CREATE TABLE $expensesTable(
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -59,15 +60,26 @@ class DatabaseSchema {
     )
   ''';
   
-  // List of all creation scripts for easier database initialization
+  // Nova tabela de categorias
+  static const String createCategoriesTable = '''
+    CREATE TABLE $categoriesTable(
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      iconName TEXT NOT NULL,
+      iconColorValue INTEGER NOT NULL
+    )
+  ''';
+  
+  // Lista de todos os scripts de criação para inicialização mais fácil do banco de dados
   static final List<String> createTableStatements = [
     createExpensesTable,
     createFixedExpensesTable,
     createIncomesTable,
     createFinanceDataTable,
+    createCategoriesTable, // Adicionado à lista
   ];
   
-  // SQL queries for data retrieval
+  // Consultas SQL para recuperação de dados
   static const String getRecentExpensesQuery = '''
     SELECT * FROM $expensesTable
     ORDER BY date DESC
@@ -90,12 +102,22 @@ class DatabaseSchema {
     LIMIT 1
   ''';
   
-  // Query to check if data exists
+  // Nova consulta para obter categorias
+  static const String getCategoriesQuery = '''
+    SELECT * FROM $categoriesTable
+    ORDER BY name ASC
+  ''';
+  
+  // Consulta para verificar se dados existem
   static const String countExpensesQuery = '''
     SELECT COUNT(*) FROM $expensesTable
   ''';
   
   static const String countFixedExpensesQuery = '''
     SELECT COUNT(*) FROM $fixedExpensesTable
+  ''';
+  
+  static const String countCategoriesQuery = '''
+    SELECT COUNT(*) FROM $categoriesTable
   ''';
 }

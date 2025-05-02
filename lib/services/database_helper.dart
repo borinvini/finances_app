@@ -7,13 +7,15 @@ import 'package:sqflite/sqflite.dart';
 import '../models/expense.dart';
 import '../models/fixed_expense.dart';
 import '../models/finance_data.dart';
+import '../models/category.dart'; // Nova importação
 import '../database/schema.dart';
+import '../database/migration_helper.dart';
 
 class DatabaseHelper {
   static final DatabaseHelper _instance = DatabaseHelper._internal();
   static Database? _database;
 
-  // Singleton pattern
+  // Padrão Singleton
   factory DatabaseHelper() => _instance;
 
   DatabaseHelper._internal();
@@ -25,10 +27,10 @@ class DatabaseHelper {
   }
 
   Future<Database> _initDatabase() async {
-    // Get a location for the database
+    // Obter uma localização para o banco de dados
     String path = join(await getDatabasesPath(), 'finances.db');
     
-    // Open/create the database
+    // Abrir/criar o banco de dados
     return await openDatabase(
       path,
       version: DatabaseSchema.schemaVersion,
@@ -38,72 +40,86 @@ class DatabaseHelper {
   }
 
   Future<void> _createDb(Database db, int version) async {
-    // Create all tables from the schema
+    // Criar todas as tabelas a partir do esquema
     for (String createStatement in DatabaseSchema.createTableStatements) {
       await db.execute(createStatement);
     }
+    
+    // Inserir categorias padrão
+    await _insertDefaultCategories(db);
   }
   
-  // Handle database upgrades
+  // Lidar com atualizações do banco de dados
   Future<void> _upgradeDb(Database db, int oldVersion, int newVersion) async {
     if (oldVersion < 2) {
-      // We're upgrading from version 1 to 2 - need to handle the split of expenses table
+      await MigrationHelper.migrateV1ToV2(db);
+    }
+    
+    if (oldVersion < 3) {
+      await MigrationHelper.migrateV2ToV3(db);
+    }
+  }
+  
+  // Método auxiliar para inserir categorias padrão
+  Future<void> _insertDefaultCategories(Database db) async {
+    // Verificar se já existem categorias
+    final categoryCount = Sqflite.firstIntValue(
+      await db.rawQuery(DatabaseSchema.countCategoriesQuery)
+    );
+    
+    if (categoryCount == 0) {
+      // Mapeamento das categorias para ícones e cores
+      final categories = [
+        {
+          'name': 'Moradia',
+          'iconName': 'home',
+          'iconColorValue': Colors.blue.shade700.value
+        },
+        {
+          'name': 'Alimentação',
+          'iconName': 'fastfood',
+          'iconColorValue': Colors.orange.shade700.value
+        },
+        {
+          'name': 'Transporte',
+          'iconName': 'directions_car',
+          'iconColorValue': Colors.green.shade700.value
+        },
+        {
+          'name': 'Saúde',
+          'iconName': 'medication',
+          'iconColorValue': Colors.red.shade700.value
+        },
+        {
+          'name': 'Educação',
+          'iconName': 'school',
+          'iconColorValue': Colors.purple.shade700.value
+        },
+        {
+          'name': 'Lazer',
+          'iconName': 'movie',
+          'iconColorValue': Colors.amber.shade700.value
+        },
+        {
+          'name': 'Serviços',
+          'iconName': 'build',
+          'iconColorValue': Colors.grey.shade700.value
+        },
+        {
+          'name': 'Outros',
+          'iconName': 'attach_money',
+          'iconColorValue': Colors.teal.shade700.value
+        }
+      ];
       
-      // First create the new fixed_expenses table
-      await db.execute(DatabaseSchema.createFixedExpensesTable);
-      
-      // Copy fixed expenses from old table to new table
-      List<Map<String, dynamic>> fixedExpenses = await db.query(
-        DatabaseSchema.expensesTable,
-        where: 'dueDay > 0'
-      );
-      
-      for (var expenseMap in fixedExpenses) {
-        // Convert from old expense schema to new fixed expense schema
-        await db.insert(
-          DatabaseSchema.fixedExpensesTable,
-          {
-            'bill': expenseMap['name'],
-            'amount': expenseMap['amount'],
-            'iconName': expenseMap['iconName'],
-            'iconColorValue': expenseMap['iconColorValue'],
-            'date': expenseMap['date'],
-            'dueDay': expenseMap['dueDay'],
-            'paid': expenseMap['paid'] ?? 0,
-          }
-        );
+      // Inserir cada categoria
+      for (var category in categories) {
+        await db.insert(DatabaseSchema.categoriesTable, category);
       }
-      
-      // Create a temporary table with new schema for regular expenses
-      await db.execute('''
-        CREATE TABLE expenses_temp(
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          name TEXT NOT NULL,
-          amount REAL NOT NULL,
-          iconName TEXT NOT NULL,
-          iconColorValue INTEGER NOT NULL,
-          category TEXT NOT NULL,
-          date TEXT NOT NULL
-        )
-      ''');
-      
-      // Copy regular expenses to the temporary table
-      await db.execute('''
-        INSERT INTO expenses_temp (name, amount, iconName, iconColorValue, category, date)
-        SELECT name, amount, iconName, iconColorValue, category, date
-        FROM ${DatabaseSchema.expensesTable}
-        WHERE dueDay IS NULL OR dueDay <= 0
-      ''');
-      
-      // Drop old table
-      await db.execute('DROP TABLE ${DatabaseSchema.expensesTable}');
-      
-      // Rename temporary table to expenses
-      await db.execute('ALTER TABLE expenses_temp RENAME TO ${DatabaseSchema.expensesTable}');
     }
   }
 
-  // EXPENSE CRUD OPERATIONS
+  // OPERAÇÕES CRUD DE DESPESA
   Future<int> insertExpense(Expense expense) async {
     final db = await database;
     return await db.insert(
@@ -152,7 +168,7 @@ class DatabaseHelper {
     );
   }
   
-  // FIXED EXPENSE CRUD OPERATIONS
+  // OPERAÇÕES CRUD DE DESPESA FIXA
   Future<int> insertFixedExpense(FixedExpense fixedExpense) async {
     final db = await database;
     return await db.insert(
@@ -192,7 +208,7 @@ class DatabaseHelper {
     );
   }
   
-  // INCOME CRUD OPERATIONS
+  // OPERAÇÕES CRUD DE RECEITA
   Future<int> insertIncome(Income income) async {
     final db = await database;
     return await db.insert(
@@ -241,7 +257,62 @@ class DatabaseHelper {
     );
   }
   
-  // FINANCE DATA OPERATIONS
+  // OPERAÇÕES CRUD DE CATEGORIA
+  Future<int> insertCategory(Category category) async {
+    final db = await database;
+    return await db.insert(
+      DatabaseSchema.categoriesTable,
+      category.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+  
+  Future<List<Category>> getCategories() async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.rawQuery(
+      DatabaseSchema.getCategoriesQuery
+    );
+    
+    return List.generate(maps.length, (i) {
+      return Category.fromMap(maps[i]);
+    });
+  }
+  
+  Future<Category?> getCategoryByName(String name) async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      DatabaseSchema.categoriesTable,
+      where: 'name = ?',
+      whereArgs: [name],
+    );
+    
+    if (maps.isNotEmpty) {
+      return Category.fromMap(maps.first);
+    }
+    
+    return null;
+  }
+  
+  Future<int> updateCategory(Category category) async {
+    final db = await database;
+    return await db.update(
+      DatabaseSchema.categoriesTable,
+      category.toMap(),
+      where: 'id = ?',
+      whereArgs: [category.id],
+    );
+  }
+  
+  Future<int> deleteCategory(int id) async {
+    final db = await database;
+    return await db.delete(
+      DatabaseSchema.categoriesTable,
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+  
+  // OPERAÇÕES DE DADOS FINANCEIROS
   Future<int> insertFinanceData(FinanceData financeData) async {
     final db = await database;
     return await db.insert(
@@ -265,7 +336,7 @@ class DatabaseHelper {
       return FinanceData.fromMap(maps.first);
     }
     
-    return null; // No data for current month
+    return null; // Sem dados para o mês atual
   }
   
   Future<int> updateFinanceData(FinanceData financeData) async {
@@ -278,11 +349,11 @@ class DatabaseHelper {
     );
   }
   
-  // Insert sample data
+  // Inserir dados de exemplo
   Future<void> insertSampleData() async {
     final db = await database;
     
-    // Check if data already exists
+    // Verificar se já existem dados
     final expenseCount = Sqflite.firstIntValue(
       await db.rawQuery(DatabaseSchema.countExpensesQuery)
     );
@@ -292,27 +363,29 @@ class DatabaseHelper {
     );
     
     if (expenseCount == 0 && fixedExpenseCount == 0) {
-      // Sample regular expense data
+      // Inserir categorias padrão (já feito no método _insertDefaultCategories)
+      
+      // Dados de despesa regular de exemplo
       for (var expense in getSampleExpenses()) {
         await insertExpense(expense);
       }
       
-      // Sample fixed expense data
+      // Dados de despesa fixa de exemplo
       for (var fixedExpense in getSampleFixedExpenses()) {
         await insertFixedExpense(fixedExpense);
       }
       
-      // Sample income data
+      // Dados de receita de exemplo
       for (var income in getSampleIncomes()) {
         await insertIncome(income);
       }
       
-      // Current month finance data
+      // Dados financeiros do mês atual
       await insertFinanceData(getCurrentFinances());
     }
   }
   
-  // Helper method to provide sample expense data
+  // Método auxiliar para fornecer dados de despesa de exemplo
   List<Expense> getSampleExpenses() {
     return [
       Expense(
@@ -342,7 +415,7 @@ class DatabaseHelper {
     ];
   }
   
-  // Helper method to provide sample fixed expense data
+  // Método auxiliar para fornecer dados de despesa fixa de exemplo
   List<FixedExpense> getSampleFixedExpenses() {
     return [
       FixedExpense(
@@ -389,7 +462,7 @@ class DatabaseHelper {
     ];
   }
   
-  // Helper method to provide sample income data
+  // Método auxiliar para fornecer dados de receita de exemplo
   List<Income> getSampleIncomes() {
     return [
       Income(
@@ -414,22 +487,22 @@ class DatabaseHelper {
     ];
   }
   
-  // NEW METHOD: Reset database
+  // NOVO MÉTODO: Resetar banco de dados
   Future<void> resetDatabase() async {
-    // Close any open database connections first
+    // Fechar primeiro quaisquer conexões abertas com o banco de dados
     if (_database != null) {
       await _database!.close();
       _database = null;
     }
     
-    // Get the database path and delete the file
+    // Obter o caminho do banco de dados e excluir o arquivo
     String path = join(await getDatabasesPath(), 'finances.db');
     if (await databaseExists(path)) {
       await deleteDatabase(path);
-      print('Database deleted successfully');
+      print('Banco de dados excluído com sucesso');
     }
     
-    // Reinitialize the database with sample data
+    // Reinicializar o banco de dados com dados de exemplo
     _database = await _initDatabase();
     await insertSampleData();
   }

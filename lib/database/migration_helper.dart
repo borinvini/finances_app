@@ -1,4 +1,5 @@
 // lib/database/migration_helper.dart
+import 'package:flutter/material.dart';
 import 'package:sqflite/sqflite.dart';
 import 'schema.dart';
 
@@ -57,5 +58,67 @@ class MigrationHelper {
     await db.execute('ALTER TABLE expenses_temp RENAME TO ${DatabaseSchema.expensesTable}');
     
     print('Migration from V1 to V2 completed successfully');
+  }
+
+  static Future<void> migrateV2ToV3(Database db) async {
+    // Criar a nova tabela de categorias
+    await db.execute(DatabaseSchema.createCategoriesTable);
+    
+    // Inserir as categorias padrão com ícones e cores predefinidos
+    await _insertDefaultCategories(db);
+    
+    print('Migration from V2 to V3 completed successfully');
+  }
+  
+  // Método auxiliar para inserir categorias padrão
+  static Future<void> _insertDefaultCategories(Database db) async {
+    // Mapeamento das categorias para ícones e cores
+    final categories = [
+      {
+        'name': 'Moradia',
+        'iconName': 'home',
+        'iconColorValue': Colors.blue.shade700.value
+      },
+      {
+        'name': 'Alimentação',
+        'iconName': 'fastfood',
+        'iconColorValue': Colors.orange.shade700.value
+      },
+      {
+        'name': 'Transporte',
+        'iconName': 'directions_car',
+        'iconColorValue': Colors.green.shade700.value
+      },
+      {
+        'name': 'Saúde',
+        'iconName': 'medication',
+        'iconColorValue': Colors.red.shade700.value
+      },
+      {
+        'name': 'Educação',
+        'iconName': 'school',
+        'iconColorValue': Colors.purple.shade700.value
+      },
+      {
+        'name': 'Lazer',
+        'iconName': 'movie',
+        'iconColorValue': Colors.amber.shade700.value
+      },
+      {
+        'name': 'Serviços',
+        'iconName': 'build',
+        'iconColorValue': Colors.grey.shade700.value
+      },
+      {
+        'name': 'Outros',
+        'iconName': 'attach_money',
+        'iconColorValue': Colors.teal.shade700.value
+      }
+    ];
+    
+    // Inserir cada categoria
+    for (var category in categories) {
+      await db.insert(DatabaseSchema.categoriesTable, category);
+    }
   }
 }
