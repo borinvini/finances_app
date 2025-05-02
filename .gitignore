@@ -12,6 +12,9 @@
 .swiftpm/
 migrate_working_dir/
 
+# databases
+*.db
+
 # IntelliJ related
 *.iml
 *.ipr
@@ -44,5 +47,4 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
-# databases
-*.db
+

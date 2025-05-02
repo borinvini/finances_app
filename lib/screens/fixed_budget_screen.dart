@@ -5,8 +5,15 @@ import '../providers/finance_provider.dart';
 import '../widgets/fixed_expense_list_item.dart';
 import '../widgets/income_list_item.dart';
 
+// Removed the Scaffold and FloatingActionButton as they'll be handled by HomeScreen
 class FixedBudgetScreen extends StatefulWidget {
-  const FixedBudgetScreen({super.key});
+  // Add callback for add button
+  final VoidCallback? onAddPressed;
+  
+  const FixedBudgetScreen({
+    super.key,
+    this.onAddPressed,
+  });
 
   @override
   State<FixedBudgetScreen> createState() => _FixedBudgetScreenState();

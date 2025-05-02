@@ -17,6 +17,21 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
   
+  // Method to handle navigation to add transaction screen
+  void _navigateToAddTransaction(SourceScreen source) {
+    final financeProvider = Provider.of<FinanceProvider>(context, listen: false);
+    
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AddTransactionScreen(sourceScreen: source),
+      ),
+    ).then((_) {
+      // Refresh data - provider instance already captured before navigation
+      financeProvider.loadAllData();
+    });
+  }
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -46,13 +61,12 @@ class _HomeScreenState extends State<HomeScreen> {
       body: _buildBody(),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const AddTransactionScreen()),
-          ).then((_) {
-            // Refresh data when coming back from add screen
-            Provider.of<FinanceProvider>(context, listen: false).loadAllData();
-          });
+          // Use source based on current tab
+          final source = _currentIndex == 0 
+              ? SourceScreen.home 
+              : SourceScreen.budget;
+          
+          _navigateToAddTransaction(source);
         },
         backgroundColor: Colors.blue,
         mini: true,
@@ -94,7 +108,9 @@ class _HomeScreenState extends State<HomeScreen> {
       case 0:
         return _buildHomeTab();
       case 1:
-        return const FixedBudgetScreen();
+        return FixedBudgetScreen(
+          onAddPressed: () => _navigateToAddTransaction(SourceScreen.budget),
+        );
       case 2:
         // Placeholder for "Despesas no Brasil" tab
         return const Center(

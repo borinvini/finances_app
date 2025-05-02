@@ -9,8 +9,16 @@ import '../models/fixed_expense.dart';
 // Define transaction type enum outside the class to avoid scope issues
 enum TransactionType { regularExpense, fixedExpense, income }
 
+// Add this enum for the source screen
+enum SourceScreen { home, budget }
+
 class AddTransactionScreen extends StatefulWidget {
-  const AddTransactionScreen({super.key});
+  final SourceScreen sourceScreen;
+
+  const AddTransactionScreen({
+    super.key,
+    required this.sourceScreen,
+  });
 
   @override
   State<AddTransactionScreen> createState() => _AddTransactionScreenState();
@@ -20,7 +28,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   final _formKey = GlobalKey<FormState>();
   
   // Form fields
-  TransactionType _transactionType = TransactionType.regularExpense;
+  late TransactionType _transactionType;
   String _name = '';
   String _bill = '';
   double _amount = 0.0;
@@ -60,6 +68,13 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   @override
   void initState() {
     super.initState();
+    // Set default transaction type based on source screen
+    if (widget.sourceScreen == SourceScreen.home) {
+      _transactionType = TransactionType.regularExpense;
+    } else {
+      _transactionType = TransactionType.fixedExpense;
+    }
+    
     // Set default category
     _category = _transactionType == TransactionType.income ? _incomeCategories[0] : _expenseCategories[0];
   }
@@ -145,98 +160,77 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Transaction type selector
-              Card(
-                margin: const EdgeInsets.only(bottom: 16),
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Column(
-                    children: [
-                      const Text(
-                        'Tipo de Transação',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
+              // Transaction type selector - only show if on budget screen
+              if (widget.sourceScreen == SourceScreen.budget)
+                Card(
+                  margin: const EdgeInsets.only(bottom: 16),
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Column(
+                      children: [
+                        const Text(
+                          'Tipo de Transação',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 8),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          Expanded(
-                            child: TextButton(
-                              onPressed: () {
-                                setState(() {
-                                  _transactionType = TransactionType.regularExpense;
-                                  _category = _expenseCategories[0];
-                                });
-                              },
-                              style: TextButton.styleFrom(
-                                backgroundColor: _transactionType == TransactionType.regularExpense 
-                                    ? Colors.red.withOpacity(0.2) 
-                                    : Colors.transparent,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
+                        const SizedBox(height: 8),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            // Only show fixed expense and income options for budget screen
+                            Expanded(
+                              child: TextButton(
+                                onPressed: () {
+                                  setState(() {
+                                    _transactionType = TransactionType.fixedExpense;
+                                    _recurringDay = _date.day; // Default to current day
+                                  });
+                                },
+                                style: TextButton.styleFrom(
+                                  backgroundColor: _transactionType == TransactionType.fixedExpense 
+                                      ? Colors.amber.withOpacity(0.2) 
+                                      : Colors.transparent,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                                child: const Text(
+                                  'Despesa Fixa',
+                                  style: TextStyle(color: Colors.white, fontSize: 13),
                                 ),
                               ),
-                              child: const Text(
-                                'Despesa Regular',
-                                style: TextStyle(color: Colors.white, fontSize: 13),
-                              ),
                             ),
-                          ),
-                          const SizedBox(width: 4),
-                          Expanded(
-                            child: TextButton(
-                              onPressed: () {
-                                setState(() {
-                                  _transactionType = TransactionType.fixedExpense;
-                                  _recurringDay = _date.day; // Default to current day
-                                });
-                              },
-                              style: TextButton.styleFrom(
-                                backgroundColor: _transactionType == TransactionType.fixedExpense 
-                                    ? Colors.amber.withOpacity(0.2) 
-                                    : Colors.transparent,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
+                            const SizedBox(width: 4),
+                            Expanded(
+                              child: TextButton(
+                                onPressed: () {
+                                  setState(() {
+                                    _transactionType = TransactionType.income;
+                                    _category = _incomeCategories[0];
+                                  });
+                                },
+                                style: TextButton.styleFrom(
+                                  backgroundColor: _transactionType == TransactionType.income 
+                                      ? Colors.green.withOpacity(0.2) 
+                                      : Colors.transparent,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                                child: const Text(
+                                  'Receita',
+                                  style: TextStyle(color: Colors.white, fontSize: 13),
                                 ),
                               ),
-                              child: const Text(
-                                'Despesa Fixa',
-                                style: TextStyle(color: Colors.white, fontSize: 13),
-                              ),
                             ),
-                          ),
-                          const SizedBox(width: 4),
-                          Expanded(
-                            child: TextButton(
-                              onPressed: () {
-                                setState(() {
-                                  _transactionType = TransactionType.income;
-                                  _category = _incomeCategories[0];
-                                });
-                              },
-                              style: TextButton.styleFrom(
-                                backgroundColor: _transactionType == TransactionType.income 
-                                    ? Colors.green.withOpacity(0.2) 
-                                    : Colors.transparent,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                              ),
-                              child: const Text(
-                                'Receita',
-                                style: TextStyle(color: Colors.white, fontSize: 13),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
               
               // Name field for regular expenses and income
               if (_transactionType != TransactionType.fixedExpense)
