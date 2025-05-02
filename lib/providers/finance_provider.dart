@@ -224,10 +224,16 @@ class FinanceProvider with ChangeNotifier {
     }
   }
   
-  // NEW METHOD: Reset database and reload data
+  // Reset database and reload data
   Future<void> resetDatabaseAndReload() async {
     await _dbHelper.resetDatabase();
     await loadAllData();
     notifyListeners();
+  }
+  
+  // This method is for "undoing" a delete operation
+  Future<void> undeleteExpense(Expense expense) async {
+    // Re-add the expense to the database
+    await addExpense(expense);
   }
 }
