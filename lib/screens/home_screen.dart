@@ -1,9 +1,11 @@
 // lib/screens/home_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
 import '../providers/finance_provider.dart';
 import '../widgets/summary_card.dart';
 import '../widgets/expense_section.dart';
+import '../widgets/month_year_picker.dart';
 import 'fixed_budget_screen.dart';
 import 'add_transaction_screen.dart';
 import 'settings_screen.dart';
@@ -38,18 +40,45 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       appBar: AppBar(
         toolbarHeight: 56,
-        title: const Text(
-          'Abril 2025',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontSize: 18,
-          ),
+        title: Consumer<FinanceProvider>(
+          builder: (context, provider, child) {
+            final selectedMonth = provider.selectedMonth;
+            String monthText;
+            try {
+              monthText = DateFormat.yMMMM('pt_BR').format(selectedMonth);
+              // Capitalize first letter
+              monthText = monthText[0].toUpperCase() + monthText.substring(1);
+            } catch (e) {
+              // Fallback if Portuguese locale is not available
+              monthText = DateFormat.yMMMM().format(selectedMonth);
+            }
+            
+            return Text(
+              monthText,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+              ),
+            );
+          },
         ),
         actions: [
           IconButton(
             icon: const Icon(Icons.calendar_today, color: Colors.white, size: 20),
-            onPressed: () {},
+            onPressed: () async {
+              final provider = Provider.of<FinanceProvider>(context, listen: false);
+              final selectedDate = await showMonthYearPicker(
+                context: context,
+                initialDate: provider.selectedMonth,
+                firstDate: DateTime(2020),
+                lastDate: DateTime(2030),
+              );
+              
+              if (selectedDate != null) {
+                provider.changeSelectedMonth(selectedDate);
+              }
+            },
             padding: const EdgeInsets.symmetric(horizontal: 12),
           ),
           IconButton(
@@ -206,11 +235,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               
-              const SizedBox(height: 4),
-              
-              // Manter a seção de Despesas Recentes
+                const SizedBox(height: 4),
+                
+              // Manter a seção de Despesas Recentes (agora filtradas por mês)
               ExpenseSection(
-                title: 'Despesas Recentes',
+                title: 'Despesas do Mês',
                 expenses: provider.recentExpenses,
                 actionText: 'Ver Todas',
                 onActionTap: () {},

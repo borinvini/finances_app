@@ -2,19 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/finance_data.dart';
 import 'package:intl/intl.dart';
 
-// Lista de meses em português como fallback
-const List<String> _monthNames = [
-  '', 'Janeiro', 'Fevereiro', 'Março', 'Abril',
-  'Maio', 'Junho', 'Julho', 'Agosto',
-  'Setembro', 'Outubro', 'Novembro', 'Dezembro'
-];
-
 class SummaryCard extends StatelessWidget {
-  // Método helper para obter nome do mês como fallback
-  static String _getMonthName(int month) {
-    if (month < 1 || month > 12) return '';
-    return _monthNames[month];
-  }
   final FinanceData financeData;
 
   const SummaryCard({
@@ -27,13 +15,14 @@ class SummaryCard extends StatelessWidget {
     // Formatar o mês atual
     String monthName;
     try {
-      final monthFormat = DateFormat.MMMM('pt_BR');
+      final monthFormat = DateFormat.yMMMM('pt_BR');
       monthName = monthFormat.format(financeData.month);
       // Capitalize a primeira letra
       monthName = monthName[0].toUpperCase() + monthName.substring(1);
     } catch (e) {
       // Fallback para nomes em inglês caso a formatação em português falhe
-      monthName = _getMonthName(financeData.month.month);
+      final monthFormat = DateFormat.yMMMM();
+      monthName = monthFormat.format(financeData.month);
     }
     
     return Card(
@@ -48,7 +37,7 @@ class SummaryCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Saldo Atual - $monthName ${financeData.month.year}',
+              'Saldo Atual - $monthName',
               style: const TextStyle(
                 color: Colors.white70,
                 fontSize: 13,

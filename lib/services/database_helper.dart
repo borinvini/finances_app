@@ -541,4 +541,43 @@ class DatabaseHelper {
     });
   }
 
+
+    // Novo método para obter despesas de um mês específico
+  Future<List<Expense>> getExpensesForMonth(DateTime month) async {
+    final db = await database;
+    final startOfMonth = DateTime(month.year, month.month, 1);
+    final endOfMonth = DateTime(month.year, month.month + 1, 0, 23, 59, 59);
+    
+    final List<Map<String, dynamic>> maps = await db.query(
+      DatabaseSchema.expensesTable,
+      where: 'date >= ? AND date <= ?',
+      whereArgs: [
+        startOfMonth.toIso8601String(),
+        endOfMonth.toIso8601String(),
+      ],
+      orderBy: 'date DESC',
+    );
+    
+    return List.generate(maps.length, (i) {
+      return Expense.fromMap(maps[i]);
+    });
+  }
+
+  // Método para obter dados financeiros de um mês específico
+  Future<FinanceData?> getFinancesForMonth(DateTime month) async {
+    final db = await database;
+    final monthStr = '${month.year}-${month.month.toString().padLeft(2, '0')}';
+    
+    final List<Map<String, dynamic>> maps = await db.rawQuery(
+      DatabaseSchema.getCurrentMonthFinancesQuery,
+      ['$monthStr%']
+    );
+    
+    if (maps.isNotEmpty) {
+      return FinanceData.fromMap(maps.first);
+    }
+    
+    return null; // Sem dados para o mês especificado
+  }
+
 }
