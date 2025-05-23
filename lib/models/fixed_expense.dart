@@ -1,5 +1,6 @@
 // lib/models/fixed_expense.dart
 import 'package:flutter/material.dart';
+import 'expense.dart'; // Import to use the updated icon conversion methods
 
 class FixedExpense {
   final int? id; // ID for database (nullable for new records)
@@ -28,7 +29,7 @@ class FixedExpense {
       if (id != null) 'id': id,
       'bill': bill,
       'amount': amount,
-      'iconName': iconToString(icon),
+      'iconName': Expense.iconToString(icon), // Use the updated method from Expense
       'iconColorValue': iconBackgroundColor.value,
       'date': date.toIso8601String(),
       'dueDay': dueDay,
@@ -42,45 +43,12 @@ class FixedExpense {
       id: map['id'],
       bill: map['bill'],
       amount: map['amount'],
-      icon: stringToIcon(map['iconName']),
+      icon: Expense.stringToIcon(map['iconName']), // Use the updated method from Expense
       iconBackgroundColor: Color(map['iconColorValue']),
       date: DateTime.parse(map['date']),
       dueDay: map['dueDay'],
       paid: map['paid'] == 1,
     );
-  }
-  
-  // Helper methods to convert IconData to/from string - reusing from Expense model
-  static String iconToString(IconData icon) {
-    // This is a simple mapping - expand for more icons as needed
-    if (icon == Icons.home) return 'home';
-    if (icon == Icons.bolt) return 'bolt';
-    if (icon == Icons.wifi) return 'wifi';
-    if (icon == Icons.water_drop) return 'water_drop';
-    if (icon == Icons.shopping_cart) return 'shopping_cart';
-    if (icon == Icons.movie) return 'movie';
-    if (icon == Icons.medication) return 'medication';
-    if (icon == Icons.fastfood) return 'fastfood';
-    if (icon == Icons.directions_car) return 'directions_car';
-    if (icon == Icons.phone_android) return 'phone_android';
-    
-    return 'attach_money'; // Default icon
-  }
-  
-  static IconData stringToIcon(String iconName) {
-    switch(iconName) {
-      case 'home': return Icons.home;
-      case 'bolt': return Icons.bolt;
-      case 'wifi': return Icons.wifi;
-      case 'water_drop': return Icons.water_drop;
-      case 'shopping_cart': return Icons.shopping_cart;
-      case 'movie': return Icons.movie;
-      case 'medication': return Icons.medication;
-      case 'fastfood': return Icons.fastfood;
-      case 'directions_car': return Icons.directions_car;
-      case 'phone_android': return Icons.phone_android;
-      default: return Icons.attach_money;
-    }
   }
   
   // Copy a fixed expense with some fields changed

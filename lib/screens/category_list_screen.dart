@@ -35,8 +35,8 @@ class CategoryListScreen extends StatelessWidget {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _navigateToAddCategory(context),
-        child: const Icon(Icons.add),
         tooltip: 'Adicionar Categoria',
+        child: const Icon(Icons.add),
       ),
     );
   }

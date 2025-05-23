@@ -47,7 +47,7 @@ class MyApp extends StatelessWidget {
           colorScheme: ColorScheme.fromSwatch().copyWith(
             primary: Colors.blue,
             secondary: Colors.blueAccent,
-            background: const Color(0xFF0A0E1A),
+            surface: const Color(0xFF0A0E1A),
           ),
         ),
         home: const AppStartupScreen(),

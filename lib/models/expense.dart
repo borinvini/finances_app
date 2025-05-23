@@ -45,9 +45,9 @@ class Expense {
     );
   }
   
-  // Helper methods to convert IconData to/from string
+  // UPDATED: Complete icon mapping to match CategoryFormScreen icons
   static String iconToString(IconData icon) {
-    // This is a simple mapping - expand for more icons as needed
+    // Original icons
     if (icon == Icons.home) return 'home';
     if (icon == Icons.bolt) return 'bolt';
     if (icon == Icons.wifi) return 'wifi';
@@ -59,11 +59,43 @@ class Expense {
     if (icon == Icons.directions_car) return 'directions_car';
     if (icon == Icons.phone_android) return 'phone_android';
     
-    return 'attach_money'; // Default icon
+    // Additional icons from CategoryFormScreen
+    if (icon == Icons.school) return 'school';
+    if (icon == Icons.local_hospital) return 'local_hospital';
+    if (icon == Icons.sports_soccer) return 'sports_soccer';
+    if (icon == Icons.attach_money) return 'attach_money';
+    if (icon == Icons.credit_card) return 'credit_card';
+    if (icon == Icons.local_atm) return 'local_atm';
+    if (icon == Icons.fitness_center) return 'fitness_center';
+    if (icon == Icons.flight_takeoff) return 'flight_takeoff';
+    if (icon == Icons.laptop_mac) return 'laptop_mac';
+    if (icon == Icons.restaurant) return 'restaurant';
+    if (icon == Icons.build) return 'build';
+    if (icon == Icons.category) return 'category';
+    if (icon == Icons.celebration) return 'celebration';
+    if (icon == Icons.child_care) return 'child_care';
+    if (icon == Icons.pets) return 'pets';
+    if (icon == Icons.book) return 'book';
+    if (icon == Icons.coffee) return 'coffee';
+    if (icon == Icons.local_bar) return 'local_bar';
+    if (icon == Icons.train) return 'train';
+    if (icon == Icons.apartment) return 'apartment';
+    
+    // Additional icons that might be used
+    if (icon == Icons.handyman) return 'handyman';
+    if (icon == Icons.devices_other) return 'devices_other';
+    if (icon == Icons.checkroom) return 'checkroom';
+    if (icon == Icons.sports_esports) return 'sports_esports';
+    if (icon == Icons.restaurant_menu) return 'restaurant_menu';
+    if (icon == Icons.commute) return 'commute';
+    if (icon == Icons.house) return 'house';
+    
+    return 'category'; // Default to category icon instead of attach_money
   }
   
   static IconData stringToIcon(String iconName) {
     switch(iconName) {
+      // Original icons
       case 'home': return Icons.home;
       case 'bolt': return Icons.bolt;
       case 'wifi': return Icons.wifi;
@@ -74,7 +106,39 @@ class Expense {
       case 'fastfood': return Icons.fastfood;
       case 'directions_car': return Icons.directions_car;
       case 'phone_android': return Icons.phone_android;
-      default: return Icons.attach_money;
+      
+      // Additional icons from CategoryFormScreen
+      case 'school': return Icons.school;
+      case 'local_hospital': return Icons.local_hospital;
+      case 'sports_soccer': return Icons.sports_soccer;
+      case 'attach_money': return Icons.attach_money;
+      case 'credit_card': return Icons.credit_card;
+      case 'local_atm': return Icons.local_atm;
+      case 'fitness_center': return Icons.fitness_center;
+      case 'flight_takeoff': return Icons.flight_takeoff;
+      case 'laptop_mac': return Icons.laptop_mac;
+      case 'restaurant': return Icons.restaurant;
+      case 'build': return Icons.build;
+      case 'category': return Icons.category;
+      case 'celebration': return Icons.celebration;
+      case 'child_care': return Icons.child_care;
+      case 'pets': return Icons.pets;
+      case 'book': return Icons.book;
+      case 'coffee': return Icons.coffee;
+      case 'local_bar': return Icons.local_bar;
+      case 'train': return Icons.train;
+      case 'apartment': return Icons.apartment;
+      
+      // Additional icons that might be used
+      case 'handyman': return Icons.handyman;
+      case 'devices_other': return Icons.devices_other;
+      case 'checkroom': return Icons.checkroom;
+      case 'sports_esports': return Icons.sports_esports;
+      case 'restaurant_menu': return Icons.restaurant_menu;
+      case 'commute': return Icons.commute;
+      case 'house': return Icons.house;
+      
+      default: return Icons.category; // Default to category icon
     }
   }
   

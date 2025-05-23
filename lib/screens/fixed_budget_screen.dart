@@ -76,7 +76,7 @@ class _FixedBudgetScreenState extends State<FixedBudgetScreen> {
                 onReceivedChanged: (value) {
                   provider.toggleIncomeReceived(income);
                 },
-              )).toList(),
+              )),
               
               // Total income
               Padding(
@@ -131,7 +131,7 @@ class _FixedBudgetScreenState extends State<FixedBudgetScreen> {
                 onPaidChanged: (value) {
                   provider.toggleExpensePaid(fixedExpense);
                 },
-              )).toList(),
+              )),
               
               // Total expenses
               Padding(
